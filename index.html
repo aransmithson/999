@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DISPATCH 911</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap');
+:root{
+  --bg:#07111a;--panel:#060c12;--border:#1a3550;
+  --accent:#00d4ff;--red:#ff3333;--amber:#ffaa00;
+  --green:#00ff88;--police:#4499ff;--fire:#ff5500;--amb:#ff3399;
+  --text:#7aaccc;--bright:#cce8ff;--dim:#1a3a55;
+}
+*{margin:0;padding:0;box-sizing:border-box;touch-action:none;-webkit-tap-highlight-color:transparent;}
+html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);font-family:'Share Tech Mono',monospace;color:var(--text);}
+
+/* TITLE */
+#title{position:fixed;inset:0;background:#050b10;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9000;}
+#title-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 55% at 50% 38%,#0d2840 0%,#050b10 70%);overflow:hidden;}
+.tgl{position:absolute;background:rgba(0,212,255,.03);}
+#tc{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:16px;}
+.t-badge{font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.4em;font-size:11px;color:var(--red);border:1px solid #ff333344;padding:3px 14px;margin-bottom:5px;animation:blink2 2s infinite;}
+.t-main{font-family:'Bebas Neue',sans-serif;font-size:clamp(54px,13vw,96px);color:var(--accent);line-height:.85;letter-spacing:.05em;text-shadow:0 0 40px rgba(0,212,255,.5),0 0 80px rgba(0,212,255,.2);}
+.t-sub{font-family:'Barlow Condensed',sans-serif;font-weight:300;letter-spacing:.3em;font-size:13px;color:var(--text);margin-top:3px;}
+.t-icons{display:flex;gap:18px;margin:12px 0;font-size:34px;}
+#explainer{background:rgba(0,0,0,.45);border:1px solid var(--border);border-radius:8px;padding:13px 16px;max-width:320px;width:90%;display:flex;flex-direction:column;gap:8px;margin:5px 0;}
+.ex-row{display:flex;align-items:flex-start;gap:10px;}
+.ex-n{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);line-height:1;flex-shrink:0;width:17px;}
+.ex-t{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--bright);line-height:1.4;}
+.ex-t b{color:var(--accent);}
+#start-btn{margin-top:12px;font-family:'Bebas Neue',sans-serif;font-size:25px;letter-spacing:.2em;color:#060c12;background:var(--accent);border:none;padding:10px 42px;border-radius:4px;cursor:pointer;box-shadow:0 0 26px rgba(0,212,255,.4);animation:btnp 2s 1s infinite;}
+#start-btn:hover{transform:scale(1.04);}
+@keyframes blink2{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes btnp{0%,100%{box-shadow:0 0 26px rgba(0,212,255,.4)}50%{box-shadow:0 0 48px rgba(0,212,255,.7)}}
+
+/* GAME */
+#game{display:none;flex-direction:column;width:100vw;height:100vh;}
+#game.on{display:flex;}
+#map-wrap{flex:0 0 75%;position:relative;overflow:hidden;}
+#map-canvas{position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;}
+
+
+/* notifs — map overlay, top-right */
+#notifs{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:3px;z-index:100;pointer-events:none;max-width:200px;}
+.notif{background:rgba(4,9,16,.95);border-left:3px solid var(--green);padding:3px 8px;font-size:9px;color:var(--bright);border-radius:0 3px 3px 0;animation:nI .22s ease,nO .22s 2.78s ease forwards;}
+.notif.bad{border-left-color:var(--red);}
+@keyframes nI{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@keyframes nO{to{opacity:0;transform:translateX(14px)}}
+
+
+   Layout (column):
+     1. #ticker   — full width live updates
+     2. #sbar     — full width score bar
+     3. #main-row — [status panel | unit strip] fills remaining height
+────────────────────────────────────────────────────── */
+#bot{
+  flex:1;background:var(--panel);border-top:2px solid var(--border);
+  display:flex;flex-direction:column;
+  position:relative;z-index:10;
+  overflow:hidden;
+  min-height:0;
+}
+
+/* ticker — full width, moved from map into panel */
+#ticker{
+  display:flex;align-items:center;
+  height:24px;flex-shrink:0;
+  background:rgba(0,0,0,.4);
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+  font-size:10px;padding:0 8px;gap:8px;
+}
+#t-badge{
+  background:var(--red);color:#fff;
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:11px;
+  padding:1px 7px;letter-spacing:.1em;flex-shrink:0;
+  animation:blink2 .9s infinite;
+}
+#t-inner{display:flex;gap:14px;white-space:nowrap;overflow:hidden;flex:1;}
+.ti{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.td{width:6px;height:6px;border-radius:50%;}
+
+/* score bar — full width */
+#sbar{
+  display:flex;align-items:center;justify-content:space-around;
+  padding:3px 10px;border-bottom:1px solid var(--border);
+  background:rgba(0,0,0,.3);flex-shrink:0;
+}
+.si{display:flex;flex-direction:column;align-items:center;}
+.sl{font-size:7px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;}
+.sv{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;}
+.sv.g{color:var(--green);}.sv.b{color:var(--accent);}.sv.r{color:var(--amber);}.sv.w{color:var(--bright);}
+
+/* main row: status panel + unit strip */
+#main-row{
+  flex:1;display:flex;flex-direction:row;
+  min-height:0;overflow:hidden;
+}
+
+/* LEFT — incident status */
+#status-panel{
+  flex:0 0 40%;
+  border-right:1px solid var(--border);
+  background:rgba(0,0,0,.2);
+  display:flex;flex-direction:column;
+  padding:5px 8px 4px;
+  gap:0;
+  overflow:hidden;
+}
+/* Body wrapper — holds both idle+active at the same size */
+#sp-body{
+  position:relative;
+  flex:1;
+  min-height:0;
+}
+#sp-idle{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;opacity:.3;
+  transition:opacity .15s;
+}
+#sp-idle.hidden{opacity:0;pointer-events:none;}
+#sp-idle-icon{font-size:18px;}
+#sp-idle-txt{font-size:8px;letter-spacing:.06em;color:var(--text);text-align:center;line-height:1.4;}
+#sp-active{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:3px 0 2px;
+  overflow:hidden;
+  opacity:0;pointer-events:none;
+  transition:opacity .15s;
+}
+#sp-active.on{opacity:1;pointer-events:auto;}
+#sp-title{
+  font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--red);
+  letter-spacing:.06em;line-height:1;flex-shrink:0;
+}
+#sp-sev{font-size:7px;color:var(--amber);letter-spacing:.1em;flex-shrink:0;}
+#sp-loc{font-size:7px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+#sp-desc{font-size:7px;color:var(--text);line-height:1.35;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+#sp-needs{display:flex;flex-wrap:wrap;gap:3px;flex-shrink:0;}
+.np{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;
+  padding:1px 5px;border-radius:2px;letter-spacing:.04em;
+}
+.np.police{background:rgba(68,153,255,.14);color:var(--police);border:1px solid var(--police);}
+.np.fire{background:rgba(255,85,0,.14);color:var(--fire);border:1px solid var(--fire);}
+.np.amb{background:rgba(255,51,153,.14);color:var(--amb);border:1px solid var(--amb);}
+.np.done{opacity:.3;text-decoration:line-through;}
+#sp-close{
+  font-size:7px;color:var(--dim);cursor:pointer;
+  letter-spacing:.05em;flex-shrink:0;text-align:right;
+}
+#sp-close:hover{color:var(--text);}
+
+/* RIGHT — unit strip fills remaining width */
+#ustrip{
+  flex:0 0 60%;display:flex;align-items:center;justify-content:center;
+  gap:6px;padding:5px 8px;
+  overflow:hidden;
+}
+.uc{
+  background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:5px;
+  padding:4px 8px;display:flex;flex-direction:column;align-items:center;
+  gap:1px;cursor:grab;user-select:none;
+  transition:border-color .2s,box-shadow .2s;position:relative;
+  flex:1;max-width:80px;
+}
+.uc.police{border-color:rgba(68,153,255,.35);}
+.uc.fire{border-color:rgba(255,85,0,.35);}
+.uc.amb{border-color:rgba(255,51,153,.35);}
+.uc.busy{opacity:.38;cursor:not-allowed;}
+.uc:not(.busy):hover{box-shadow:0 0 10px rgba(0,212,255,.18);}
+.ui-big{font-size:24px;line-height:1;}
+.ul{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;letter-spacing:.08em;}
+.ul.police{color:var(--police);}.ul.fire{color:var(--fire);}.ul.amb{color:var(--amb);}
+.us{font-size:7px;}.us.ok{color:var(--green);}.us.on{color:var(--amber);}
+.uc-cnt{
+  position:absolute;top:2px;right:3px;background:var(--accent);color:#060c12;
+  font-size:7px;font-weight:bold;width:12px;height:12px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Upgrade button — same flex sizing as unit cards */
+#upg-btn{
+  background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.35);
+  border-radius:5px;color:var(--accent);
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  padding:4px 8px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  flex:1;max-width:70px;
+  transition:border-color .2s,box-shadow .2s;
+}
+#upg-btn:hover{box-shadow:0 0 10px rgba(0,212,255,.25);border-color:var(--accent);}
+#upg-icon{font-size:20px;line-height:1;}
+#upg-label{font-size:8px;letter-spacing:.06em;}
+#ghost{position:fixed;pointer-events:none;z-index:9999;font-size:28px;transform:translate(-50%,-50%);display:none;filter:drop-shadow(0 0 8px currentColor);}
+#um{display:none;position:fixed;inset:0;background:rgba(0,0,0,.83);z-index:600;align-items:center;justify-content:center;}
+#um.on{display:flex;}
+.mb{background:var(--panel);border:1px solid var(--accent);border-radius:8px;padding:20px;width:min(315px,92vw);max-height:80vh;overflow-y:auto;}
+.mt{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);letter-spacing:.15em;margin-bottom:10px;}
+.ui2{border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:8px;cursor:pointer;transition:border-color .2s;}
+.ui2:hover:not(.bought){border-color:var(--accent);}.ui2.bought{opacity:.38;cursor:default;}
+.un{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:var(--bright);}
+.uc2{color:var(--green);font-size:10px;margin-top:2px;}.ud{color:var(--text);font-size:9px;margin-top:3px;}
+.mc{width:100%;margin-top:10px;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;padding:8px;cursor:pointer;border-radius:4px;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,rgba(0,212,255,.012) 0,rgba(0,212,255,.012) 1px,transparent 1px,transparent 3px);pointer-events:none;z-index:8000;}
+</style>
+</head>
+<body>
+
+<div id="title">
+  <div id="title-bg"></div>
+  <div id="tc">
+    <div class="t-badge">EMERGENCY RESPONSE SIMULATOR</div>
+    <div class="t-main">DISPATCH<br>911</div>
+    <div class="t-sub">PROTECT · RESPOND · RESOLVE</div>
+    <div class="t-icons">🚔&nbsp;🚒&nbsp;🚑</div>
+    <div id="explainer">
+      <div class="ex-row"><div class="ex-n">1</div><div class="ex-t"><b>Emergencies</b> flash on the city map. Tap one to see what services are needed.</div></div>
+      <div class="ex-row"><div class="ex-n">2</div><div class="ex-t"><b>Drag a unit</b> from the bottom panel and drop it on the emergency marker.</div></div>
+      <div class="ex-row"><div class="ex-n">3</div><div class="ex-t">Watch your vehicle <b>drive the roads</b> from its station to the scene, work it, then return.</div></div>
+      <div class="ex-row"><div class="ex-n">4</div><div class="ex-t"><b>Don't let calls time out!</b> Earn cash → buy upgrades → extra units + faster crews.</div></div>
+    </div>
+    <button id="start-btn">RESPOND NOW</button>
+  </div>
+</div>
+
+<div id="game">
+  <div id="map-wrap">
+    <canvas id="map-canvas"></canvas>
+    <div id="notifs"></div>
+  </div>
+  <div id="bot">
+
+    <!-- 1. Live ticker -->
+    <div id="ticker">
+      <div id="t-badge">LIVE</div>
+      <div id="t-inner">Monitoring city systems...</div>
+    </div>
+
+    <!-- 2. Score bar — full width -->
+    <div id="sbar">
+      <div class="si"><div class="sl">Score</div><div class="sv b" id="sc-el">0</div></div>
+      <div class="si"><div class="sl">Funds</div><div class="sv g" id="mo-el">$0</div></div>
+      <div class="si"><div class="sl">Rating</div><div class="sv r" id="ra-el">★★★★★</div></div>
+      <div class="si"><div class="sl">Resolved</div><div class="sv w" id="re-el">0</div></div>
+      <div class="si"><div class="sl">Wave</div><div class="sv r" id="wa-el">1</div></div>
+    </div>
+
+    <!-- 3. Main row: status panel (left) + unit strip (right) -->
+    <div id="main-row">
+
+      <div id="status-panel">
+        <div id="sp-body">
+          <div id="sp-idle">
+            <div id="sp-idle-icon">📡</div>
+            <div id="sp-idle-txt">Tap an emergency on the map</div>
+          </div>
+          <div id="sp-active">
+            <div id="sp-title"></div>
+            <div id="sp-sev"></div>
+            <div id="sp-loc"></div>
+            <div id="sp-desc"></div>
+            <div id="sp-needs"></div>
+            <div id="sp-close">✕ CLEAR</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ustrip">
+        <div class="uc police" id="uc-police" data-type="police">
+          <div class="uc-cnt" id="cn-police">1</div>
+          <div class="ui-big">🚔</div>
+          <div class="ul police">POLICE</div>
+          <div class="us ok" id="st-police">READY</div>
+        </div>
+        <div class="uc fire" id="uc-fire" data-type="fire">
+          <div class="uc-cnt" id="cn-fire">1</div>
+          <div class="ui-big">🚒</div>
+          <div class="ul fire">FIRE DEPT</div>
+          <div class="us ok" id="st-fire">READY</div>
+        </div>
+        <div class="uc amb" id="uc-amb" data-type="amb">
+          <div class="uc-cnt" id="cn-amb">1</div>
+          <div class="ui-big">🚑</div>
+          <div class="ul amb">MEDIC</div>
+          <div class="us ok" id="st-amb">READY</div>
+        </div>
+        <button id="upg-btn">
+          <div id="upg-icon">⬆</div>
+          <div id="upg-label">UPGRADES</div>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="ghost"></div>
+<div id="um">
+  <div class="mb">
+    <div class="mt">UPGRADE CENTER</div>
+    <div id="ul2"></div>
+    <button class="mc" id="um-close">CLOSE</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   AUDIO
+═══════════════════════════════════════ */
+let AC=null;
+function ensureAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}
+function tone(f,type,dur,vol=0.14,delay=0){
+  if(!AC)return;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.connect(g);g.connect(AC.destination);
+  o.type=type;o.frequency.setValueAtTime(f,AC.currentTime+delay);
+  g.gain.setValueAtTime(0,AC.currentTime+delay);
+  g.gain.linearRampToValueAtTime(vol,AC.currentTime+delay+0.02);
+  g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+delay+dur);
+  o.start(AC.currentTime+delay);o.stop(AC.currentTime+delay+dur+0.05);
+}
+function sfxAlert(){tone(880,'sine',.12,.16);tone(660,'sine',.12,.12,.13);tone(880,'sine',.12,.14,.26);}
+function sfxDispatch(){tone(440,'square',.07,.10);tone(550,'square',.07,.09,.08);tone(660,'square',.1,.10,.16);}
+function sfxResolve(){[523,659,784,1047].forEach((f,i)=>tone(f,'sine',.2,.12,i*.08));}
+function sfxTimeout(){tone(200,'sawtooth',.28,.14);tone(150,'sawtooth',.38,.11,.2);}
+function sfxSiren(t){const f=t==='police'?880:t==='fire'?700:620;[0,1,2].forEach(i=>{tone(f,'sine',.1,.07,i*.13);tone(f*.8,'sine',.1,.06,i*.13+.065);});}
+
+/* ═══════════════════════════════════════
+   MAP GRID
+   
+   The city is a 7×5 grid of CELLS.
+   Roads run along EVERY cell boundary — so every block is
+   completely surrounded by roads on all 4 sides.
+   
+   Column x positions (0–1):  0, .14, .28, .42, .56, .70, .84, 1.0
+   Row    y positions (0–1):  0, .20, .40, .60, .80, 1.0
+   
+   Each CELL (col,row) occupies the interior between those lines.
+   Block fill = slightly inset from the road centre.
+═══════════════════════════════════════ */
+
+// Column X values — 8 vertical lines → 7 columns
+const CX = [0, .14, .28, .42, .56, .70, .84, 1.0];
+// Row Y values — 6 horizontal lines → 5 rows
+const RY = [0, .20, .40, .60, .80, 1.0];
+
+// Node IDs: row * 8 + col  (row 0..5, col 0..7)
+function nid(col,row){ return row*8+col; }
+
+const NODES = [];
+for(let r=0;r<6;r++) for(let c=0;c<8;c++)
+  NODES.push({id:nid(c,r), x:CX[c], y:RY[r]});
+
+const EDGES = [];
+// Horizontal edges
+for(let r=0;r<6;r++) for(let c=0;c<7;c++) EDGES.push([nid(c,r),nid(c+1,r)]);
+// Vertical edges
+for(let r=0;r<5;r++) for(let c=0;c<8;c++) EDGES.push([nid(c,r),nid(c,r+1)]);
+
+const ADJ = NODES.map(()=>[]);
+EDGES.forEach(([a,b])=>{ADJ[a].push(b);ADJ[b].push(a);});
+
+function d2(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+
+function nearestNode(x,y){
+  let best=0,bd=1e9;
+  NODES.forEach(n=>{const d=Math.hypot(n.x-x,n.y-y);if(d<bd){bd=d;best=n.id;}});
+  return best;
+}
+
+function pathfind(s,e){
+  const dist=Array(NODES.length).fill(Infinity),prev=Array(NODES.length).fill(-1);
+  dist[s]=0;const vis=new Set(),q=[s];
+  while(q.length){
+    q.sort((a,b)=>dist[a]-dist[b]);
+    const u=q.shift();if(vis.has(u))continue;vis.add(u);if(u===e)break;
+    ADJ[u].forEach(v=>{const nd=dist[u]+d2(NODES[u],NODES[v]);if(nd<dist[v]){dist[v]=nd;prev[v]=u;q.push(v);}});
+  }
+  const p=[];let c=e;while(c!==-1){p.unshift(c);c=prev[c];}
+  return p.length>1?p:[s,e];
+}
+
+function pathLen(path){let d=0;for(let i=0;i<path.length-1;i++)d+=d2(NODES[path[i]],NODES[path[i+1]]);return d;}
+
+/* ═══════════════════════════════════════
+   CITY BLOCK DEFINITIONS
+   Each block occupies one cell (col,row) in the grid.
+   The actual block rect is slightly inset from the road grid lines.
+   type: 'block'|'commercial'|'park'|'water'|'civic'|'hospital'|'station_police'|'station_fire'|'station_amb'
+═══════════════════════════════════════ */
+
+// 7 cols × 5 rows = 35 cells
+// Station blocks: police=(col1,row1), fire=(col1,row3), amb=(col5,row2)
+const CELL_DEFS = [
+  // Row 0
+  {col:0,row:0,t:'water',     lb:'HARBOR'},
+  {col:1,row:0,t:'commercial',lb:'MARKET DIST'},
+  {col:2,row:0,t:'civic',     lb:'CITY HALL'},
+  {col:3,row:0,t:'hospital',  lb:'MEMORIAL\nHOSPITAL'},
+  {col:4,row:0,t:'block',     lb:'NORTH HILL'},
+  {col:5,row:0,t:'block',     lb:'EAST RIDGE'},
+  {col:6,row:0,t:'block',     lb:'DOCKLANDS'},
+  // Row 1
+  {col:0,row:1,t:'block',     lb:'OLD PORT'},
+  {col:1,row:1,t:'station_police',lb:'POLICE HQ'},
+  {col:2,row:1,t:'park',      lb:'CENTRAL\nPARK'},
+  {col:3,row:1,t:'block',     lb:'MIDTOWN'},
+  {col:4,row:1,t:'block',     lb:'FINANCE\nDIST'},
+  {col:5,row:1,t:'commercial',lb:'GRAND\nSTATION'},
+  {col:6,row:1,t:'block',     lb:'EAST DOCKS'},
+  // Row 2
+  {col:0,row:2,t:'block',     lb:'RIVERSIDE'},
+  {col:1,row:2,t:'block',     lb:'WEST END'},
+  {col:2,row:2,t:'park',      lb:'RIVERSIDE\nPARK'},
+  {col:3,row:2,t:'civic',     lb:'LIBRARY SQ'},
+  {col:4,row:2,t:'commercial',lb:'HOTEL ROW'},
+  {col:5,row:2,t:'station_amb',lb:'EMS BASE'},
+  {col:6,row:2,t:'block',     lb:'EASTSIDE'},
+  // Row 3
+  {col:0,row:3,t:'water',     lb:'SOUTH\nINLET'},
+  {col:1,row:3,t:'block',     lb:'SOUTH WEST'},
+  {col:2,row:3,t:'commercial',lb:'BROAD ST'},
+  {col:3,row:3,t:'block',     lb:'THEATER\nDIST'},
+  {col:4,row:3,t:'block',     lb:'HILLCREST'},
+  {col:5,row:3,t:'block',     lb:'HARBOR\nVIEW'},
+  {col:6,row:3,t:'block',     lb:'MILL DIST'},
+  // Row 4
+  {col:0,row:4,t:'block',     lb:'SOUTH POINT'},
+  {col:1,row:4,t:'station_fire',lb:'FIRE STATION\nNO. 1'},
+  {col:2,row:4,t:'park',      lb:'MEMORIAL\nGARDENS'},
+  {col:3,row:4,t:'block',     lb:'CHINATOWN'},
+  {col:4,row:4,t:'block',     lb:'ARTS\nQUARTER'},
+  {col:5,row:4,t:'commercial',lb:'INDUSTRIAL\nZONE'},
+  {col:6,row:4,t:'block',     lb:'STADIUM DIST'},
+];
+
+// For each station_* cell, derive the nearest road node (corner of the cell)
+// Station cells exit onto their top-left road node for pathfinding
+const STATION_DEFS = {
+  police: { cellCol:1, cellRow:1 },
+  fire:   { cellCol:1, cellRow:4 },
+  amb:    { cellCol:5, cellRow:2 },
+};
+// Station node = top-left corner of cell
+Object.entries(STATION_DEFS).forEach(([type,s])=>{
+  s.nid = nid(s.cellCol, s.cellRow);
+  s.x   = CX[s.cellCol];
+  s.y   = RY[s.cellRow];
+});
+
+const UCOLS = {police:'#4499ff', fire:'#ff5500', amb:'#ff3399'};
+const UICONS = {police:'🚔', fire:'🚒', amb:'🚑'};
+
+/* Block colours */
+const BCOL = {
+  water:         {f:'#0a2636',s:'#0d3654',l:'#1a5272'},
+  park:          {f:'#0a2214',s:'#0d2e18',l:'#1a5828'},
+  block:         {f:'#0c1d2c',s:'#152e44',l:'#2a4862'},
+  commercial:    {f:'#0e1f35',s:'#192f4c',l:'#2a5080'},
+  civic:         {f:'#0e1f32',s:'#1a3248',l:'#286a80'},
+  hospital:      {f:'#0c2030',s:'#163c40',l:'#1a6060'},
+  station_police:{f:'#0a1a30',s:'#2244aa',l:'#4499ff'},
+  station_fire:  {f:'#2a0e00',s:'#aa3300',l:'#ff5500'},
+  station_amb:   {f:'#2a0018',s:'#aa0055',l:'#ff3399'},
+};
+
+/* ═══════════════════════════════════════
+   PRE-BAKE window positions (once, not per frame)
+═══════════════════════════════════════ */
+const BLOCK_WINDOWS = {};
+CELL_DEFS.forEach(b=>{
+  if(!['block','commercial','civic','hospital','station_police','station_fire','station_amb'].includes(b.t)) return;
+  const key = `${b.col}_${b.row}`;
+  BLOCK_WINDOWS[key] = [];
+  // We'll generate in normalised cell-local coords (0-1), scaled at draw time
+  const rows=4, cols=5;
+  for(let wr=0;wr<rows;wr++) for(let wc=0;wc<cols;wc++){
+    BLOCK_WINDOWS[key].push({
+      fx: (wc+.5)/cols,
+      fy: (wr+.5)/rows,
+      lit: Math.random()<0.42,
+    });
+  }
+});
+
+/* ═══════════════════════════════════════
+   EMERGENCY TYPES & LOCATIONS
+═══════════════════════════════════════ */
+const ET=[
+  {n:'ROBBERY',       nd:['police'],            sv:'HIGH',    rw:300,cl:'police',ds:'Armed robbery in progress. Officers needed.'},
+  {n:'STRUCTURE FIRE',nd:['fire','amb'],         sv:'CRITICAL',rw:500,cl:'fire',  ds:'Building fire with casualties. Fire & EMS required.'},
+  {n:'CAR ACCIDENT',  nd:['police','amb'],       sv:'MEDIUM',  rw:350,cl:'amb',   ds:'Multi-vehicle crash with injuries.'},
+  {n:'CARDIAC ARREST',nd:['amb'],               sv:'CRITICAL',rw:250,cl:'amb',   ds:'Unresponsive patient. EMS only.'},
+  {n:'GAS LEAK',      nd:['fire'],              sv:'HIGH',    rw:280,cl:'fire',  ds:'Gas leak at residence. Fire unit required.'},
+  {n:'SHOOTING',      nd:['police','amb'],       sv:'CRITICAL',rw:450,cl:'police',ds:'Active shooter. Police & paramedics respond.'},
+  {n:'FLOOD RESCUE',  nd:['fire','amb'],         sv:'MEDIUM',  rw:320,cl:'fire',  ds:'Flash flood trapping residents.'},
+  {n:'OVERDOSE',      nd:['amb'],               sv:'HIGH',    rw:200,cl:'amb',   ds:'Drug overdose reported.'},
+  {n:'EXPLOSION',     nd:['fire','police','amb'],sv:'CRITICAL',rw:600,cl:'fire',  ds:'Explosion! All services needed!'},
+  {n:'BURGLARY',      nd:['police'],            sv:'LOW',     rw:180,cl:'police',ds:'Active break-in reported.'},
+  {n:'RIOT',          nd:['police','police'],    sv:'HIGH',    rw:400,cl:'police',ds:'Civil unrest. Two police units required.'},
+];
+
+// Emergency locations — centred within cells (mid between road lines)
+// Exclude station cells
+const ELOCS = CELL_DEFS
+  .filter(b=>!b.t.startsWith('station'))
+  .map(b=>({
+    n: b.lb.replace('\n',' '),
+    x: (CX[b.col]+CX[b.col+1])/2,
+    y: (RY[b.row]+RY[b.row+1])/2,
+    col: b.col, row: b.row,
+  }));
+
+/* ═══════════════════════════════════════
+   CANVAS
+═══════════════════════════════════════ */
+const canvas=document.getElementById('map-canvas');
+const ctx=canvas.getContext('2d');
+let CW=0,CH=0;
+const TH=0; // ticker is in the panel, not overlapping the canvas
+
+function resize(){CW=canvas.width=canvas.offsetWidth;CH=canvas.height=canvas.offsetHeight;}
+
+// Map coordinate helpers — y offset by ticker
+function mx(x){return x*CW;}
+function my(y){return TH+y*(CH-TH);}
+
+// Cell pixel rect (inset from road centre lines by half road width)
+function cellRect(col,row){
+  const rw = Math.max(5,CW*0.012); // road half-width
+  const inset = rw*0.5+1;
+  const x0=mx(CX[col])+inset, y0=my(RY[row])+inset;
+  const x1=mx(CX[col+1])-inset, y1=my(RY[row+1])-inset;
+  return {x:x0, y:y0, w:x1-x0, h:y1-y0};
+}
+
+/* Static map — drawn once to offscreen canvas, then blitted each frame */
+let mapCanvas=null;
+
+function buildMapCanvas(){
+  mapCanvas=document.createElement('canvas');
+  mapCanvas.width=CW; mapCanvas.height=CH;
+  const mc=mapCanvas.getContext('2d');
+
+  // Background
+  mc.fillStyle='#0b1720'; mc.fillRect(0,0,CW,CH);
+
+  // ── Roads (draw before blocks so blocks sit on top) ──
+  const rw=Math.max(5,CW*0.012);
+
+  // Road fill (asphalt)
+  EDGES.forEach(([a,b])=>{
+    const A=NODES[a],B=NODES[b];
+    mc.strokeStyle='#1a3750'; mc.lineWidth=rw*2; mc.lineCap='square';
+    mc.beginPath(); mc.moveTo(mx(A.x),my(A.y)); mc.lineTo(mx(B.x),my(B.y)); mc.stroke();
+  });
+  // Road surface highlight
+  EDGES.forEach(([a,b])=>{
+    const A=NODES[a],B=NODES[b];
+    mc.strokeStyle='#213e55'; mc.lineWidth=rw*2*.5;
+    mc.beginPath(); mc.moveTo(mx(A.x),my(A.y)); mc.lineTo(mx(B.x),my(B.y)); mc.stroke();
+  });
+  // Centre-line dashes
+  mc.setLineDash([7,10]); mc.lineWidth=1;
+  EDGES.forEach(([a,b])=>{
+    const A=NODES[a],B=NODES[b];
+    mc.strokeStyle='rgba(40,85,125,.5)';
+    mc.beginPath(); mc.moveTo(mx(A.x),my(A.y)); mc.lineTo(mx(B.x),my(B.y)); mc.stroke();
+  });
+  mc.setLineDash([]);
+
+  // Intersection squares
+  NODES.forEach(n=>{
+    const s=rw*1.05;
+    mc.fillStyle='#1d3f58';
+    mc.fillRect(mx(n.x)-s,my(n.y)-s,s*2,s*2);
+  });
+
+  // ── City blocks ──
+  CELL_DEFS.forEach(b=>{
+    const c=BCOL[b.t]||BCOL.block;
+    const r=cellRect(b.col,b.row);
+
+    // Drop shadow
+    mc.fillStyle='rgba(0,0,0,.3)'; mc.fillRect(r.x+2,r.y+2,r.w,r.h);
+    // Fill
+    mc.fillStyle=c.f; mc.fillRect(r.x,r.y,r.w,r.h);
+    // Border
+    mc.strokeStyle=c.s; mc.lineWidth=1.5; mc.strokeRect(r.x,r.y,r.w,r.h);
+
+    // Park trees
+    if(b.t==='park'){
+      mc.fillStyle='rgba(0,80,25,.3)';
+      for(let tx=r.x+8;tx<r.x+r.w-6;tx+=13) for(let ty=r.y+8;ty<r.y+r.h-6;ty+=13){
+        mc.beginPath(); mc.arc(tx,ty,5,0,Math.PI*2); mc.fill();
+      }
+      // Lighter path lines
+      mc.strokeStyle='rgba(0,100,30,.2)'; mc.lineWidth=1.5; mc.setLineDash([4,6]);
+      mc.beginPath(); mc.moveTo(r.x+r.w/2,r.y+4); mc.lineTo(r.x+r.w/2,r.y+r.h-4); mc.stroke();
+      mc.beginPath(); mc.moveTo(r.x+4,r.y+r.h/2); mc.lineTo(r.x+r.w-4,r.y+r.h/2); mc.stroke();
+      mc.setLineDash([]);
+    }
+
+    // Water ripples
+    if(b.t==='water'){
+      mc.strokeStyle='rgba(0,110,190,.2)'; mc.lineWidth=1;
+      for(let ry2=r.y+10;ry2<r.y+r.h-6;ry2+=12){
+        mc.beginPath(); mc.moveTo(r.x+5,ry2);
+        for(let rx2=r.x+5;rx2<r.x+r.w-5;rx2+=20)
+          mc.bezierCurveTo(rx2+5,ry2-3,rx2+10,ry2+3,rx2+20,ry2);
+        mc.stroke();
+      }
+      // Subtle shimmer patches
+      mc.fillStyle='rgba(0,140,220,.04)';
+      mc.beginPath(); mc.arc(r.x+r.w*.3,r.y+r.h*.4,r.w*.15,0,Math.PI*2); mc.fill();
+      mc.beginPath(); mc.arc(r.x+r.w*.7,r.y+r.h*.65,r.w*.1,0,Math.PI*2); mc.fill();
+    }
+
+    // Baked windows
+    const key=`${b.col}_${b.row}`;
+    if(BLOCK_WINDOWS[key]){
+      BLOCK_WINDOWS[key].forEach(w=>{
+        const wx=r.x+w.fx*r.w, wy=r.y+w.fy*r.h;
+        mc.fillStyle = w.lit ? 'rgba(200,230,255,.15)' : 'rgba(20,50,90,.08)';
+        mc.fillRect(wx-2.5,wy-2.5,5,5);
+      });
+    }
+
+    // Station special styling
+    if(b.t.startsWith('station')){
+      const type=b.t.replace('station_','');
+      const col=UCOLS[type];
+      // Colour overlay
+      mc.fillStyle=col+'18'; mc.fillRect(r.x,r.y,r.w,r.h);
+      // Glowing border
+      mc.save(); mc.shadowColor=col; mc.shadowBlur=12;
+      mc.strokeStyle=col; mc.lineWidth=2;
+      mc.strokeRect(r.x+1,r.y+1,r.w-2,r.h-2);
+      mc.restore();
+      // Big vehicle icon
+      mc.font=`${Math.min(r.w,r.h)*0.35}px serif`;
+      mc.textAlign='center'; mc.textBaseline='middle';
+      mc.fillText(UICONS[type], r.x+r.w*.5, r.y+r.h*.38);
+      // Station name below icon
+      mc.fillStyle=col;
+      mc.font=`bold ${Math.max(7,Math.min(r.w*.12,11))}px Barlow Condensed`;
+      mc.textAlign='center'; mc.textBaseline='middle';
+      const lines=b.lb.split('\n');
+      lines.forEach((ln,i)=>{
+        mc.fillText(ln, r.x+r.w/2, r.y+r.h*.7+(i-(lines.length-1)/2)*11);
+      });
+      mc.textBaseline='alphabetic';
+      return; // skip generic label
+    }
+
+    // Generic block label
+    mc.fillStyle=c.l;
+    mc.font=`${Math.max(7,Math.min(r.w*.12,10))}px Barlow Condensed`;
+    mc.textAlign='center'; mc.textBaseline='middle';
+    const lines=b.lb.split('\n');
+    lines.forEach((ln,i)=>mc.fillText(ln, r.x+r.w/2, r.y+r.h/2+(i-(lines.length-1)/2)*11));
+    mc.textBaseline='alphabetic';
+  });
+
+  // Compass rose
+  const crx=CW-26, cry=CH-26;
+  mc.globalAlpha=.6;
+  mc.fillStyle='rgba(4,9,16,.75)'; mc.beginPath(); mc.arc(crx,cry,16,0,Math.PI*2); mc.fill();
+  mc.strokeStyle='#2a5070'; mc.lineWidth=1; mc.stroke();
+  mc.fillStyle='#4499ff'; mc.font='bold 9px Barlow Condensed'; mc.textAlign='center'; mc.textBaseline='middle';
+  mc.fillText('N',crx,cry-7); mc.fillStyle='#5a7a99';
+  mc.fillText('S',crx,cry+7); mc.fillText('E',crx+8,cry); mc.fillText('W',crx-8,cry);
+  mc.globalAlpha=1; mc.textBaseline='alphabetic';
+}
+
+/* ═══════════════════════════════════════
+   DRAW LOOP LAYERS
+═══════════════════════════════════════ */
+function drawEmergencies(t){
+  G.ems.forEach(e=>{
+    const ex=mx(e.x), ey=my(e.y);
+    const et=ET.find(x=>x.n===e.type);
+    const col=UCOLS[et.cl];
+    const pulse=.78+.22*Math.sin(t/270);
+    const age=(t-e.born)/1000;
+    const tMax=30+G.wave*2;
+    const urgency=Math.min(1,age/tMax);
+
+    // timeout arc
+    ctx.beginPath(); ctx.arc(ex,ey,22,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,60,60,.1)'; ctx.lineWidth=2.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(ex,ey,22,-Math.PI/2,-Math.PI/2+(1-urgency)*Math.PI*2);
+    ctx.strokeStyle=urgency>.7?'#ff3333':col+'aa'; ctx.lineWidth=2.5; ctx.stroke();
+
+    // pulse ring
+    ctx.beginPath(); ctx.arc(ex,ey,13*pulse,0,Math.PI*2);
+    ctx.fillStyle=col+'1a'; ctx.fill();
+    ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.stroke();
+
+    // 🚨 icon
+    ctx.font='15px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🚨',ex,ey); ctx.textBaseline='alphabetic';
+
+    // label
+    ctx.fillStyle=urgency>.7?'#ff6666':col;
+    ctx.font='bold 9px Barlow Condensed'; ctx.textAlign='center';
+    ctx.fillText(e.type,ex,ey-24);
+
+    // on-scene progress bars
+    let barY=ey+28;
+    e.disp.forEach(d=>{
+      if(!d.inProg) return;
+      const pg=Math.min(1,d.progress||0);
+      ctx.fillStyle='rgba(0,0,0,.7)'; ctx.fillRect(ex-24,barY-4,48,7);
+      ctx.fillStyle=UCOLS[d.type]; ctx.fillRect(ex-24,barY-4,48*pg,7);
+      ctx.strokeStyle=UCOLS[d.type]+'88'; ctx.lineWidth=.8; ctx.strokeRect(ex-24,barY-4,48,7);
+      ctx.font='9px serif'; ctx.textAlign='left'; ctx.fillText(UICONS[d.type],ex-34,barY+3);
+      barY+=10;
+    });
+  });
+}
+
+/* Get pixel position + angle along a node-id path at normalised progress 0–1 */
+function posOnPath(path, progress){
+  if(!path||path.length<2) return null;
+  const segs=[];
+  let total=0;
+  for(let i=0;i<path.length-1;i++){
+    const dd=d2(NODES[path[i]],NODES[path[i+1]]);
+    segs.push(dd); total+=dd;
+  }
+  if(total===0) return {x:mx(NODES[path[0]].x), y:my(NODES[path[0]].y), angle:0};
+  let target=Math.min(0.9999,progress)*total;
+  for(let i=0;i<segs.length;i++){
+    if(target<=segs[i]+0.00001||i===segs.length-1){
+      const t2=segs[i]>0.00001 ? Math.min(1,target/segs[i]) : 0;
+      const A=NODES[path[i]], B=NODES[path[i+1]];
+      return {
+        x: mx(A.x+(B.x-A.x)*t2),
+        y: my(A.y+(B.y-A.y)*t2),
+        angle: Math.atan2(my(B.y)-my(A.y), mx(B.x)-mx(A.x)),
+        path, segs, total, seg:i, t2,
+      };
+    }
+    target-=segs[i];
+  }
+  // Fallback: end of path
+  const A=NODES[path[path.length-2]], B=NODES[path[path.length-1]];
+  return {x:mx(B.x),y:my(B.y),angle:Math.atan2(my(B.y)-my(A.y),mx(B.x)-mx(A.x)),path,segs,total};
+}
+
+function drawVehicles(t){
+  G.vehs.forEach(v=>{
+    const isGoing     = v.phase==='going';
+    const isWorking   = v.phase==='working';
+    const isReturning = v.phase==='returning';
+    const col = UCOLS[v.type];
+
+    // ── Working at scene: show a static "parked" vehicle icon at the incident ──
+    if(isWorking){
+      const em=G.ems.find(e=>e.id===v.eid);
+      if(!em) return;
+      const sx=mx(em.x)+16, sy=my(em.y)-8; // offset slightly so it doesn't overlap beacon
+      ctx.font='13px serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(UICONS[v.type], sx, sy);
+      ctx.textBaseline='alphabetic';
+      return;
+    }
+
+    // ── Travelling: going or returning ──
+    const path = isGoing ? v.path : v.rpath;
+    if(!path||path.length<2) return;
+
+    const pos=posOnPath(path, v.pp);
+    if(!pos) return;
+
+    const {x:vx, y:vy, angle, segs, total} = pos;
+
+    // Siren glow pulses on going; dimmer steady glow on return
+    if(isGoing && Math.floor(t/160)%2===0){
+      ctx.save();
+      ctx.shadowColor=col; ctx.shadowBlur=18;
+      ctx.beginPath(); ctx.arc(vx,vy,12,0,Math.PI*2);
+      ctx.fillStyle=col+'28'; ctx.fill();
+      ctx.restore();
+    }
+    if(isReturning){
+      ctx.beginPath(); ctx.arc(vx,vy,9,0,Math.PI*2);
+      ctx.fillStyle=col+'15'; ctx.fill();
+    }
+
+    // Vehicle body rectangle (rotated to face direction of travel)
+    ctx.save();
+    ctx.translate(vx,vy);
+    ctx.rotate(angle);
+    // Going: full bright colour. Returning: slightly desaturated/darker
+    ctx.fillStyle = isGoing ? col : col+'bb';
+    ctx.strokeStyle = isGoing ? 'rgba(255,255,255,.85)' : 'rgba(200,200,200,.5)';
+    ctx.lineWidth=0.9;
+    ctx.beginPath(); ctx.roundRect(-11,-6,22,12,3); ctx.fill(); ctx.stroke();
+    // Small direction arrow on vehicle
+    ctx.fillStyle='rgba(255,255,255,.5)';
+    ctx.beginPath(); ctx.moveTo(7,0); ctx.lineTo(3,-3); ctx.lineTo(3,3); ctx.closePath(); ctx.fill();
+    ctx.restore();
+
+    // Emoji icon (upright, on top of rectangle)
+    ctx.font='11px serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(UICONS[v.type], vx, vy);
+    ctx.textBaseline='alphabetic';
+
+    // Returning label
+    if(isReturning){
+      ctx.fillStyle=col+'99';
+      ctx.font='7px Barlow Condensed';
+      ctx.textAlign='center';
+      ctx.fillText('RETURNING', vx, vy+14);
+    }
+
+    // Trail dots behind vehicle
+    const trailSteps=4;
+    const trailSpacePx=8; // px between trail dots
+    for(let s=1;s<=trailSteps;s++){
+      const backPx=s*trailSpacePx;
+      const backProgress=Math.max(0, v.pp - backPx/(total*CW||1));
+      const tp=posOnPath(path, backProgress);
+      if(!tp) continue;
+      const alpha = isGoing
+        ? (s===1?'cc':s===2?'77':s===3?'44':'22')
+        : (s===1?'55':s===2?'33':'22');
+      const r2=Math.max(0.5, 2.5-s*0.5);
+      ctx.beginPath(); ctx.arc(tp.x,tp.y,r2,0,Math.PI*2);
+      ctx.fillStyle=col+alpha; ctx.fill();
+    }
+  });
+}
+
+/* ═══════════════════════════════════════
+   GAME STATE
+═══════════════════════════════════════ */
+const G={
+  money:0,score:0,resolved:0,rating:5,wave:1,
+  ems:[],vehs:[],nextId:1,
+  spawnT:0,waveT:0,lastT:0,
+  veh:{police:{total:1,busy:0},fire:{total:1,busy:0},amb:{total:1,busy:0}},
+  efficiency:1.0,
+  upgrades:new Set(),
+};
+
+function spawnInterval(){
+  const base=20000,min=5000,ramp=Math.min(1,(G.wave-1)/10);
+  return base-(base-min)*ramp;
+}
+
+function loop(t){
+  if(!G.lastT)G.lastT=t;
+  const dt=Math.min(t-G.lastT,80);G.lastT=t;
+
+  resize();
+
+  // Rebuild map canvas if size changed
+  if(!mapCanvas||mapCanvas.width!==CW||mapCanvas.height!==CH) buildMapCanvas();
+
+  ctx.clearRect(0,0,CW,CH);
+  ctx.drawImage(mapCanvas,0,0);
+  drawEmergencies(t);
+  drawVehicles(t);
+
+  // Spawn
+  G.spawnT+=dt;
+  if(G.spawnT>=spawnInterval()){G.spawnT=0;spawnEm();}
+
+  // Wave
+  G.waveT+=dt;
+  if(G.waveT>=60000){G.waveT=0;G.wave++;updateUI();notify(`📡 WAVE ${G.wave} — intensity rising`,false);}
+
+  // Vehicle movement
+  // Speed: vehicles travel at a fixed screen-pixels-per-ms rate so they're
+  // always clearly visible crossing the map. ~60px/s on a 400px-wide map.
+  const PX_PER_MS = 0.14; // pixels per ms — clearly visible crossing the map in ~4-6s
+  const scaledSpd = PX_PER_MS * (CW / 400);
+
+  G.vehs.forEach(v=>{
+    if(v.phase==='going'){
+      // advance in world-units: convert px/ms → normalised/ms
+      const pl=pathLen(v.path); // normalised units
+      const plPx=pl*CW;         // approx pixels
+      v.pp+=plPx>0?(scaledSpd/plPx)*dt:0.001*dt;
+      if(v.pp>=1){
+        v.pp=0; v.phase='working'; v.ws=t;
+        const em=G.ems.find(e=>e.id===v.eid);
+        if(em){
+          const d=em.disp.find(d=>d.type===v.type&&!d.inProg);
+          if(d){d.inProg=true; d.dur=v.wd;}
+        }
+        sfxSiren(v.type);
+        notify(`${UICONS[v.type]} On scene — working incident`,false);
+      }
+    } else if(v.phase==='working'){
+      const pg=Math.min(1,(t-v.ws)/v.wd);
+      const em=G.ems.find(e=>e.id===v.eid);
+      if(em){
+        const d=em.disp.find(d=>d.type===v.type&&d.inProg&&!d.done);
+        if(d) d.progress=pg;
+      }
+      if(pg>=1){
+        // Work done — mark this unit's task complete, start return drive
+        v.phase='returning'; v.pp=0;
+        const st=STATION_DEFS[v.type];
+        v.rpath=pathfind(nearestNode(v.ex,v.ey), st.nid);
+        const em2=G.ems.find(e=>e.id===v.eid);
+        if(em2){
+          const d=em2.disp.find(d=>d.type===v.type&&d.inProg&&!d.done);
+          if(d) d.done=true;
+          checkResolved(v.eid);
+        }
+        notify(`${UICONS[v.type]} Incident clear — returning to base`,false);
+      }
+    } else if(v.phase==='returning'){
+      const pl=pathLen(v.rpath);
+      const plPx=pl*CW;
+      v.pp+=plPx>0?(scaledSpd/plPx)*dt:0.001*dt;
+      if(v.pp>=1){
+        // Physically back at station — NOW mark available
+        v.done=true;
+        G.veh[v.type].busy=Math.max(0,G.veh[v.type].busy-1);
+        updateCards();
+        notify(`${UICONS[v.type]} Back at station — available`,false);
+      }
+    }
+  });
+  G.vehs=G.vehs.filter(v=>!v.done);
+
+  // Timeout emergencies
+  G.ems.forEach(e=>{
+    if(!e.timedOut&&!e.resolved){
+      const tMax=(30+G.wave*2)*1000;
+      if(t-e.born>tMax&&!e.fullyDisp){
+        e.timedOut=true;G.rating=Math.max(0,G.rating-1);updateUI();sfxTimeout();
+        notify('⚠ Call timed out! Rating −1',true);
+      }
+    }
+  });
+  G.ems=G.ems.filter(e=>!e.timedOut&&!e.resolved);
+
+  updateTicker();
+  requestAnimationFrame(loop);
+}
+
+function spawnEm(){
+  if(G.ems.length>=6) return;
+  const et=ET[Math.floor(Math.random()*ET.length)];
+  const loc=ELOCS[Math.floor(Math.random()*ELOCS.length)];
+  G.ems.push({
+    id:G.nextId++,type:et.n,needs:[...et.nd],sv:et.sv,rw:et.rw,cl:et.cl,desc:et.ds,
+    x:loc.x,y:loc.y,loc:loc.n,born:performance.now(),disp:[],fullyDisp:false,
+  });
+  sfxAlert();notify(`🚨 ${et.sv}: ${et.n} — ${loc.n}`,false);
+}
+
+function checkResolved(eid){
+  const em=G.ems.find(e=>e.id===eid);if(!em) return;
+  const nFilled=em.needs.every(n=>em.disp.filter(d=>d.type===n).length>=em.needs.filter(x=>x===n).length);
+  const allDone=em.disp.every(d=>d.done);
+  if(nFilled&&allDone){
+    em.resolved=true;G.money+=em.rw;G.score+=em.rw;G.resolved++;
+    G.rating=Math.min(5,G.rating+.25);updateUI();sfxResolve();
+    notify(`✅ ${em.type} resolved! +$${em.rw}`,false);
+    refreshStatus();
+  }
+}
+
+function dispatch(type,eid){
+  // Check availability — unit is busy from dispatch until it drives home
+  const avail = G.veh[type].total - G.veh[type].busy;
+  if(avail<=0){
+    notify(`No available ${type} units — all on the road`,true);
+    return false;
+  }
+  const em=G.ems.find(e=>e.id===eid);
+  if(!em) return false;
+  const needed=em.needs.filter(n=>n===type).length;
+  const sent=em.disp.filter(d=>d.type===type).length;
+  if(sent>=needed){notify(`${type.toUpperCase()} not required at this incident`,true);return false;}
+
+  // Lock unit immediately — stays locked until it drives back to the station
+  G.veh[type].busy++;
+  updateCards();
+
+  const st=STATION_DEFS[type];
+  const toNid=nearestNode(em.x,em.y);
+  const path=pathfind(st.nid, toNid);
+  const wd=(3000+Math.random()*4000)/G.efficiency;
+
+  em.disp.push({type, inProg:false, progress:0, done:false});
+  G.vehs.push({type, phase:'going', path, rpath:null, pp:0, eid, ex:em.x, ey:em.y, wd, ws:0});
+
+  if(em.needs.every(n=>em.disp.filter(d=>d.type===n).length>=em.needs.filter(x=>x===n).length))
+    em.fullyDisp=true;
+
+  sfxDispatch();
+  notify(`${UICONS[type]} Dispatched — en route to ${em.type}`,false);
+  refreshStatus();
+  return true;
+}
+
+function updateCards(){
+  ['police','fire','amb'].forEach(type=>{
+    const v=G.veh[type],avail=v.total-v.busy;
+    document.getElementById('cn-'+type).textContent=avail;
+    const card=document.getElementById('uc-'+type),st=document.getElementById('st-'+type);
+    if(avail<=0){card.classList.add('busy');st.className='us on';st.textContent='ON CALL';}
+    else{card.classList.remove('busy');st.className='us ok';st.textContent=avail+' READY';}
+  });
+}
+
+function updateUI(){
+  document.getElementById('sc-el').textContent=G.score;
+  document.getElementById('mo-el').textContent='$'+G.money;
+  document.getElementById('wa-el').textContent=G.wave;
+  const r=Math.max(0,Math.round(G.rating));
+  document.getElementById('ra-el').textContent='★'.repeat(r)+'☆'.repeat(5-r);
+  document.getElementById('re-el').textContent=G.resolved;
+}
+
+function updateTicker(){
+  const el=document.getElementById('t-inner');
+  if(!G.ems.length){el.innerHTML='<span style="color:#1a3a55">Monitoring city systems — all clear</span>';return;}
+  el.innerHTML=G.ems.map(e=>{
+    const et=ET.find(x=>x.n===e.type),col=UCOLS[et.cl];
+    const rem=e.needs.filter(n=>e.disp.filter(d=>d.type===n).length<e.needs.filter(x=>x===n).length);
+    return `<span class="ti"><span class="td" style="background:${col}"></span><span style="color:${col}">${e.type}</span><span style="color:#1e4060"> — ${e.loc}</span>${rem.length?`<span style="color:#ff4444;font-size:8px"> [NEEDS:${rem.join(',')}]</span>`:'<span style="color:#00ff88;font-size:8px"> [DISPATCHED]</span>'}</span>`;
+  }).join('');
+}
+
+function notify(msg,bad=false){
+  const a=document.getElementById('notifs'),el=document.createElement('div');
+  el.className='notif'+(bad?' bad':'');el.textContent=msg;a.appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+/* ── STATUS PANEL (left of bottom bar) ── */
+let selEm=null;
+const spIdle=document.getElementById('sp-idle');
+const spActive=document.getElementById('sp-active');
+
+function showStatus(em){
+  selEm=em;
+  spIdle.classList.add('hidden');
+  spActive.classList.add('on');
+  document.getElementById('sp-title').textContent='🚨 '+em.type;
+  document.getElementById('sp-sev').textContent=em.sv+' SEVERITY';
+  document.getElementById('sp-loc').textContent='📍 '+em.loc;
+  document.getElementById('sp-desc').textContent=em.desc;
+  const tally={};em.needs.forEach(n=>tally[n]=(tally[n]||0)+1);
+  const sent={};em.disp.forEach(d=>sent[d.type]=(sent[d.type]||0)+1);
+  document.getElementById('sp-needs').innerHTML=Object.entries(tally).map(([t,c])=>{
+    const s=sent[t]||0,done=s>=c?' done':'';
+    return `<span class="np ${t}${done}">${UICONS[t]} ${c>1?t.toUpperCase()+' ×'+c:t.toUpperCase()}${done?' ✓':''}</span>`;
+  }).join('');
+}
+
+function refreshStatus(){
+  if(selEm){
+    const fresh=G.ems.find(e=>e.id===selEm.id);
+    if(fresh) showStatus(fresh);
+    else clearStatus();
+  }
+}
+
+function clearStatus(){
+  selEm=null;
+  spIdle.classList.remove('hidden');
+  spActive.classList.remove('on');
+}
+
+document.getElementById('sp-close').addEventListener('click',clearStatus);
+
+canvas.addEventListener('click',e=>{
+  const r=canvas.getBoundingClientRect(),cx=e.clientX-r.left,cy=e.clientY-r.top;
+  const hit=G.ems.find(em=>Math.hypot(cx-mx(em.x),cy-my(em.y))<26);
+  hit?showStatus(hit):clearStatus();
+});
+canvas.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  const t=e.touches[0],r=canvas.getBoundingClientRect();
+  const cx=t.clientX-r.left,cy=t.clientY-r.top;
+  const hit=G.ems.find(em=>Math.hypot(cx-mx(em.x),cy-my(em.y))<30);
+  hit?showStatus(hit):clearStatus();
+},{passive:false});
+
+/* ── DRAG & DROP ── */
+let dragType=null;
+const ghost=document.getElementById('ghost');
+['police','fire','amb'].forEach(type=>{
+  const card=document.getElementById('uc-'+type);
+  card.addEventListener('mousedown',e=>{if(card.classList.contains('busy'))return;e.preventDefault();startDrag(type,e.clientX,e.clientY);});
+  card.addEventListener('touchstart',e=>{if(card.classList.contains('busy'))return;e.preventDefault();startDrag(type,e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+});
+function startDrag(t,x,y){ensureAC();dragType=t;ghost.textContent=UICONS[t];ghost.style.color=UCOLS[t];ghost.style.display='block';moveDrag(x,y);}
+function moveDrag(x,y){ghost.style.left=x+'px';ghost.style.top=y+'px';}
+function endDrag(x,y){
+  ghost.style.display='none';if(!dragType)return;
+  const r=canvas.getBoundingClientRect();
+  const cx=x-r.left,cy=y-r.top;
+  const hit=G.ems.find(em=>Math.hypot(cx-mx(em.x),cy-my(em.y))<36);
+  if(hit){dispatch(dragType,hit.id);const fr=G.ems.find(e=>e.id===hit.id);if(fr)showStatus(fr);}
+  else if(selEm){dispatch(dragType,selEm.id);const fr=G.ems.find(e=>e.id===selEm.id);if(fr)showStatus(fr);}
+  else notify('Drop on an emergency marker!',true);
+  dragType=null;
+}
+document.addEventListener('mousemove',e=>{if(dragType)moveDrag(e.clientX,e.clientY);});
+document.addEventListener('mouseup',e=>{if(dragType)endDrag(e.clientX,e.clientY);});
+document.addEventListener('touchmove',e=>{if(dragType){e.preventDefault();moveDrag(e.touches[0].clientX,e.touches[0].clientY);}},{passive:false});
+document.addEventListener('touchend',e=>{if(dragType){const t=e.changedTouches[0];endDrag(t.clientX,t.clientY);}});
+
+/* ── UPGRADES ── */
+const UPGS=[
+  {id:'xp1',  n:'Extra Police Unit',    c:500, d:'Add a 2nd police patrol car to fleet.',       type:'police'},
+  {id:'xf1',  n:'Extra Fire Truck',     c:600, d:'Add a 2nd fire truck to fleet.',               type:'fire'},
+  {id:'xa1',  n:'Extra Ambulance',      c:550, d:'Add a 2nd ambulance to fleet.',                type:'amb'},
+  {id:'xp2',  n:'Police Fleet ×3',      c:900, d:'Add a 3rd police car to fleet.',               type:'police'},
+  {id:'xf2',  n:'Fire Fleet ×3',        c:1000,d:'Add a 3rd fire truck to fleet.',               type:'fire'},
+  {id:'xa2',  n:'EMS Fleet ×3',         c:950, d:'Add a 3rd ambulance to fleet.',                type:'amb'},
+  {id:'eff1', n:'Pro Training',         c:700, d:'Crews clear incidents 25% faster.',            eff:1.25},
+  {id:'eff2', n:'Elite Response Team',  c:1200,d:'Crews clear incidents 50% faster (stacks).',  eff:1.5},
+];
+document.getElementById('upg-btn').addEventListener('click',showUpgrades);
+document.getElementById('um-close').addEventListener('click',()=>document.getElementById('um').classList.remove('on'));
+
+function showUpgrades(){
+  const ul=document.getElementById('ul2');
+  ul.innerHTML=UPGS.map(u=>{
+    const b=G.upgrades.has(u.id),af=G.money>=u.c;
+    return `<div class="ui2${b?' bought':''}" data-id="${u.id}">
+      <div class="un">${u.n}${b?' ✓':''}</div>
+      <div class="uc2">${b?'PURCHASED':'$'+u.c}${!b&&!af?` — need $${u.c-G.money} more`:''}</div>
+      <div class="ud">${u.d}</div></div>`;
+  }).join('');
+  ul.querySelectorAll('.ui2:not(.bought)').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const u=UPGS.find(x=>x.id===el.dataset.id);
+      if(!u||G.upgrades.has(u.id))return;
+      if(G.money<u.c){notify('Not enough funds!',true);return;}
+      G.money-=u.c;G.upgrades.add(u.id);
+      if(u.type)G.veh[u.type].total++;
+      if(u.eff)G.efficiency*=u.eff;
+      updateCards();updateUI();sfxResolve();
+      notify(`✅ ${u.n} purchased!`,false);showUpgrades();
+    });
+  });
+  document.getElementById('um').classList.add('on');
+}
+
+/* ── TITLE GRID LINES ── */
+const tbg=document.getElementById('title-bg');
+for(let i=0;i<14;i++){
+  const l=document.createElement('div');l.className='tgl';
+  if(i<7)l.style.cssText=`left:${i*16}%;top:0;width:1px;height:100%;`;
+  else l.style.cssText=`top:${(i-7)*16}%;left:0;width:100%;height:1px;`;
+  tbg.appendChild(l);
+}
+
+/* ── START GAME ── */
+document.getElementById('start-btn').addEventListener('click',()=>{
+  ensureAC();
+  document.getElementById('title').style.display='none';
+  document.getElementById('game').classList.add('on');
+  resize();
+  mapCanvas=null; // force rebuild at correct size
+  requestAnimationFrame(t=>{
+    G.lastT=t;G.spawnT=14000;G.waveT=0;
+    buildMapCanvas();
+    spawnEm();
+    requestAnimationFrame(loop);
+  });
+});
+</script>
+</body>
+</html>
