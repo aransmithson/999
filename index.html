@@ -439,33 +439,42 @@ const ET=[
   {n:'RIOT',             nd:['police','police'],      sv:'HIGH',    rw:360, cl:'police', wt:4, ds:'Civil unrest. Two police units required.'},
   {n:'CHEMICAL SPILL',   nd:['fire','police'],        sv:'HIGH',    rw:330, cl:'fire',   wt:4, ds:'Hazmat spill. Fire & police needed.'},
   {n:'BANK ROBBERY',     nd:['police','police'],      sv:'HIGH',    rw:370, cl:'police', wt:4, ds:'Armed bank robbery. Two units required.'},
-  // Helicopter — moderate rarity
-  {n:'CLIFF RESCUE',     nd:['heli'],                sv:'HIGH',    rw:370, cl:'heli',   wt:4, ds:'Person stranded. Air rescue needed.'},
-  {n:'MISSING PERSON',   nd:['police','heli'],        sv:'MEDIUM',  rw:310, cl:'police', wt:3, ds:'Missing person. Ground & air search.'},
-  {n:'MAJOR TRAUMA',     nd:['amb','heli'],           sv:'CRITICAL',rw:470, cl:'amb',    wt:3, ds:'Severe trauma. EMS + air ambulance.'},
+  // Helicopter — appear regularly from wave 1
+  {n:'CLIFF RESCUE',     nd:['heli'],                sv:'HIGH',    rw:370, cl:'heli',   wt:7, ds:'Person stranded. Air rescue needed.'},
+  {n:'MISSING PERSON',   nd:['police','heli'],        sv:'MEDIUM',  rw:310, cl:'police', wt:6, ds:'Missing person. Ground & air search.'},
+  {n:'MAJOR TRAUMA',     nd:['amb','heli'],           sv:'CRITICAL',rw:470, cl:'amb',    wt:5, ds:'Severe trauma. EMS + air ambulance.'},
   // Three-unit — rare, wave 4+
   {n:'WILDFIRE',         nd:['fire','fire'],          sv:'CRITICAL',rw:490, cl:'fire',   wt:2, ds:'Wildfire spreading. Two fire units needed.'},
   {n:'EXPLOSION',        nd:['fire','police','amb'],  sv:'CRITICAL',rw:570, cl:'fire',   wt:2, ds:'Explosion! All services needed!'},
   {n:'BUILDING COLLAPSE',nd:['fire','fire','amb'],    sv:'CRITICAL',rw:640, cl:'fire',   wt:2, ds:'Building collapse. Multiple casualties.'},
 ];
 
-/* Ensure we don't cluster same service type in rapid succession */
+/* Ensure we don't cluster same service type in rapid succession.
+   Also guarantee a heli call appears at least every 5 spawns. */
 let lastSpawnCl=null;
+let spawnsSinceHeli=0;
 function pickET(){
+  // Force a heli call if we haven't seen one in 5 spawns and wave >= 1
+  const forceHeli = spawnsSinceHeli>=5 && G.wave>=1;
+
   const allowed=ET.filter(e=>{
-    if(G.wave<=2 && e.nd.length>=3) return false;
-    if(G.wave<=1 && e.nd.includes('heli')) return false;
+    if(forceHeli) return e.nd.includes('heli');
+    if(G.wave<=2 && e.nd.length>=3 && !e.nd.includes('heli')) return false;
     return true;
   });
   const pool=[];
   allowed.forEach(e=>{for(let i=0;i<e.wt;i++) pool.push(e);});
   let pick=pool[Math.floor(Math.random()*pool.length)];
-  // Try up to 4 times to avoid same class as last
-  for(let i=0;i<4;i++){
-    if(pick.cl!==lastSpawnCl) break;
-    pick=pool[Math.floor(Math.random()*pool.length)];
+  // Try up to 4 times to avoid same class as last (unless forcing heli)
+  if(!forceHeli){
+    for(let i=0;i<4;i++){
+      if(pick.cl!==lastSpawnCl) break;
+      pick=pool[Math.floor(Math.random()*pool.length)];
+    }
   }
   lastSpawnCl=pick.cl;
+  if(pick.nd.includes('heli')) spawnsSinceHeli=0;
+  else spawnsSinceHeli++;
   return pick;
 }
 
@@ -609,7 +618,7 @@ function posOnPath(path,pp){
 
 /* ═══════════════════════════════════════  TOP-DOWN VEHICLES  ═══════════════════════════════════════ */
 function drawVehicleTopDown(ctx,vx,vy,angle,col,type,t,active,returning,working){
-  const BL=9,BW=5;
+  const BL=6,BW=3.5;
   const flashRate=type==='police'?160:type==='fire'?300:type==='heli'?200:220;
   const beat=Math.floor(t/flashRate)%2;
   const lightCol=type==='police'?(beat?'#ff2233':'#55aaff')
@@ -695,7 +704,7 @@ function drawVehicles(t){
     const col=UCOLS[v.type];
     if(v.phase==='working'){
       const em=G.ems.find(e=>e.id===v.eid);if(!em)return;
-      drawVehicleTopDown(ctx,mx(em.x)+15,my(em.y)-5,0,col,v.type,t,false,false,true);
+      drawVehicleTopDown(ctx,mx(em.x)+11,my(em.y)-4,0,col,v.type,t,false,false,true);
       return;
     }
     const activePath=v.phase==='going'?v.path:v.phase==='toHosp'?v.hpath:v.rpath;
@@ -763,9 +772,9 @@ function loop(t){
   G.waveT+=dt;
   if(G.waveT>=60000){G.waveT=0;G.wave++;updateUI();}
 
-  // Vehicles
-  const SPD=0.16*(CW/400);
-  const HSPD=SPD*1.7;
+  // Vehicles — smaller bodies, slower speed
+  const SPD=0.09*(CW/400);
+  const HSPD=SPD*1.5;
 
   G.vehs.forEach(v=>{
     const spd=v.type==='heli'?HSPD:SPD;
@@ -847,7 +856,9 @@ function checkResolved(eid){
   if(nFilled&&allDone){
     em.resolved=true;G.money+=em.rw;G.score+=em.rw;G.resolved++;
     G.rating=Math.min(5,G.rating+0.35);
-    updateUI();sfxResolve();refreshStatus();
+    updateUI();sfxResolve();
+    // Clear the status panel if it was showing this incident
+    if(selEm&&selEm.id===eid) clearStatus();
   }
 }
 
