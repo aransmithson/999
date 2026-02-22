@@ -35,6 +35,296 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);font-fam
 
 #game{display:none;flex-direction:column;width:100vw;height:100vh;}
 #game.on{display:flex;}
+#map-wrap{flex:0 0 75%;position:relative;overflow:hidden;}
+#map-canvas{position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;}
+
+#bot{flex:1;background:var(--panel);border-top:2px solid var(--border);display:flex;flex-direction:column;position:relative;z-index:10;overflow:hidden;min-height:0;}
+
+#ticker{display:flex;align-items:center;height:24px;flex-shrink:0;background:rgba(0,0,0,.4);border-bottom:1px solid var(--border);overflow:hidden;font-size:10px;padding:0 8px;gap:8px;}
+#t-badge{background:var(--red);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:11px;padding:1px 7px;letter-spacing:.1em;flex-shrink:0;animation:blink2 .9s infinite;}
+#t-inner{display:flex;gap:14px;white-space:nowrap;overflow:hidden;flex:1;}
+.ti{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.td{width:6px;height:6px;border-radius:50%;}
+
+#sbar{display:flex;align-items:center;justify-content:space-around;padding:3px 8px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3);flex-shrink:0;gap:2px;}
+.si{display:flex;flex-direction:column;align-items:center;}
+.sl{font-size:7px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;}
+.sv{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;}
+.sv.g{color:var(--green);}.sv.b{color:var(--accent);}.sv.r{color:var(--amber);}.sv.w{color:var(--bright);}
+#ra-el{font-size:20px;line-height:1;}
+#mute-btn{
+  background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.28);
+  border-radius:4px;color:var(--accent);font-size:13px;
+  padding:2px 7px;cursor:pointer;flex-shrink:0;
+  transition:opacity .2s,border-color .2s;
+}
+#mute-btn.muted{opacity:.4;border-color:var(--dim);}
+
+#main-row{flex:1;display:flex;flex-direction:row;min-height:0;overflow:hidden;}
+#status-panel{flex:0 0 40%;border-right:1px solid var(--border);background:rgba(0,0,0,.2);display:flex;flex-direction:column;padding:5px 8px 4px;overflow:hidden;}
+#sp-body{position:relative;flex:1;min-height:0;}
+#sp-idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;opacity:.3;transition:opacity .15s;}
+#sp-idle.hidden{opacity:0;pointer-events:none;}
+#sp-idle-icon{font-size:18px;}
+#sp-idle-txt{font-size:8px;letter-spacing:.06em;color:var(--text);text-align:center;line-height:1.4;}
+#sp-active{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:3px 0 2px;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .15s;}
+#sp-active.on{opacity:1;pointer-events:auto;}
+#sp-title{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--red);letter-spacing:.06em;line-height:1;flex-shrink:0;}
+#sp-sev{font-size:7px;color:var(--amber);letter-spacing:.1em;flex-shrink:0;}
+#sp-loc{font-size:7px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+#sp-desc{font-size:7px;color:var(--text);line-height:1.35;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+#sp-needs{display:flex;flex-wrap:wrap;gap:3px;flex-shrink:0;}
+.np{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;padding:1px 5px;border-radius:2px;letter-spacing:.04em;}
+.np.police{background:rgba(68,153,255,.14);color:var(--police);border:1px solid var(--police);}
+.np.fire{background:rgba(255,85,0,.14);color:var(--fire);border:1px solid var(--fire);}
+.np.amb{background:rgba(255,51,153,.14);color:var(--amb);border:1px solid var(--amb);}
+.np.heli{background:rgba(170,68,255,.14);color:var(--heli);border:1px solid var(--heli);}
+.np.done{opacity:.3;text-decoration:line-through;}
+#sp-close{font-size:7px;color:var(--dim);cursor:pointer;letter-spacing:.05em;flex-shrink:0;text-align:right;}
+#sp-close:hover{color:var(--text);}
+
+#ustrip{flex:0 0 60%;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 6px;overflow:hidden;}
+.uc{background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:5px;padding:4px 5px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:grab;user-select:none;transition:border-color .2s,box-shadow .2s;position:relative;flex:1;max-width:70px;}
+.uc.police{border-color:rgba(68,153,255,.35);}
+.uc.fire{border-color:rgba(255,85,0,.35);}
+.uc.amb{border-color:rgba(255,51,153,.35);}
+.uc.heli{border-color:rgba(170,68,255,.35);}
+.uc.busy{opacity:.38;cursor:not-allowed;}
+.uc:not(.busy):hover{box-shadow:0 0 10px rgba(0,212,255,.18);}
+.ui-big{font-size:20px;line-height:1;}
+.ul{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:8px;letter-spacing:.06em;}
+.ul.police{color:var(--police);}.ul.fire{color:var(--fire);}.ul.amb{color:var(--amb);}.ul.heli{color:var(--heli);}
+.us{font-size:7px;}.us.ok{color:var(--green);}.us.on{color:var(--amber);}
+.uc-cnt{position:absolute;top:2px;right:3px;background:var(--accent);color:#060c12;font-size:7px;font-weight:bold;width:12px;height:12px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+#upg-btn{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.35);border-radius:5px;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-weight:700;padding:4px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;max-width:62px;transition:border-color .2s,box-shadow .2s;}
+#upg-btn:hover{box-shadow:0 0 10px rgba(0,212,255,.25);border-color:var(--accent);}
+#upg-icon{font-size:17px;line-height:1;}
+#upg-label{font-size:7px;letter-spacing:.05em;}
+
+#ghost{position:fixed;pointer-events:none;z-index:9999;font-size:28px;transform:translate(-50%,-50%);display:none;}
+
+/* ── UPGRADE MODAL ── */
+#um{display:none;position:fixed;inset:0;background:rgba(0,0,0,.87);z-index:600;align-items:center;justify-content:center;}
+#um.on{display:flex;}
+.mb{
+  background:var(--panel);border:1px solid var(--accent);border-radius:10px;
+  padding:16px;width:min(400px,95vw);max-height:88vh;overflow-y:auto;
+  display:flex;flex-direction:column;gap:10px;
+}
+.mt{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);letter-spacing:.15em;line-height:1;}
+.mt-sub{font-size:8px;color:var(--dim);letter-spacing:.1em;}
+
+/* Upgrade tile grid — 3 columns */
+#ul2{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;align-items:start;}
+.utile{
+  background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:8px;
+  padding:10px 5px 8px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  transition:border-color .18s,background .18s;position:relative;
+  min-height:80px;justify-content:center;
+}
+.utile:hover:not(.bought):not(.cant-afford){border-color:var(--accent);background:rgba(0,212,255,.06);}
+.utile.bought{opacity:.32;cursor:default;}
+.utile.cant-afford{cursor:not-allowed;}
+.tier-row{
+  grid-column:1/-1;
+  display:flex;align-items:center;gap:8px;
+  margin-top:4px;
+}
+.tier-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:.12em;white-space:nowrap;}
+.tier-line{flex:1;height:1px;background:currentColor;opacity:.22;}
+.utile-icon{font-size:24px;line-height:1;}
+.utile-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;color:var(--bright);text-align:center;line-height:1.2;}
+.utile-price{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;color:var(--green);}
+.utile-price.cant{color:var(--amber);}
+.utile-price.owned{color:var(--green);font-size:9px;letter-spacing:.05em;}
+.utile-check{position:absolute;top:4px;right:5px;font-size:10px;color:var(--green);}
+.mc{width:100%;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;padding:8px;cursor:pointer;border-radius:4px;margin-top:2px;}
+.mc:hover{border-color:var(--accent);}
+
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,rgba(0,212,255,.012) 0,rgba(0,212,255,.012) 1px,transparent 1px,transparent 3px);pointer-events:none;z-index:8000;}
+</style>
+</head>
+<body>
+
+<div id="title">
+  <div id="title-bg"></div>
+  <div id="tc">
+    <div class="t-badge">EMERGENCY RESPONSE SIMULATOR</div>
+    <div class="t-main">DISPATCH<br>911</div>
+    <div class="t-sub">PROTECT · RESPOND · RESOLVE</div>
+    <div class="t-icons">🚔&nbsp;🚒&nbsp;🚑&nbsp;🚁</div>
+    <div id="explainer">
+      <div class="ex-row"><div class="ex-n">1</div><div class="ex-t"><b>Emergencies</b> flash on the city map. Tap one to see what services are needed.</div></div>
+      <div class="ex-row"><div class="ex-n">2</div><div class="ex-t"><b>Drag a unit</b> from the panel onto the map, or select an incident then drag.</div></div>
+      <div class="ex-row"><div class="ex-n">3</div><div class="ex-t">Ambulances drive to <b>hospital</b> after the scene before returning to base.</div></div>
+      <div class="ex-row"><div class="ex-n">4</div><div class="ex-t">Keep your <b>rating face</b> happy — earn cash, buy upgrades, handle more calls.</div></div>
+    </div>
+    <button id="start-btn">RESPOND NOW</button>
+  </div>
+</div>
+
+<div id="game">
+  <div id="map-wrap">
+    <canvas id="map-canvas"></canvas>
+  </div>
+  <div id="bot">
+    <div id="ticker">
+      <div id="t-badge">LIVE</div>
+      <div id="t-inner">Monitoring city systems...</div>
+    </div>
+    <div id="sbar">
+      <div class="si"><div class="sl">Score</div><div class="sv b" id="sc-el">0</div></div>
+      <div class="si"><div class="sl">Funds</div><div class="sv g" id="mo-el">$0</div></div>
+      <div class="si"><div class="sl">Rating</div><div id="ra-el">😄</div></div>
+      <div class="si"><div class="sl">Resolved</div><div class="sv w" id="re-el">0</div></div>
+      <div class="si"><div class="sl">Wave</div><div class="sv r" id="wa-el">1</div></div>
+      <button id="mute-btn" title="Toggle sound">🔊</button>
+    </div>
+    <div id="main-row">
+      <div id="status-panel">
+        <div id="sp-body">
+          <div id="sp-idle"><div id="sp-idle-icon">📡</div><div id="sp-idle-txt">Tap an emergency on the map</div></div>
+          <div id="sp-active">
+            <div id="sp-title"></div>
+            <div id="sp-sev"></div>
+            <div id="sp-loc"></div>
+            <div id="sp-desc"></div>
+            <div id="sp-needs"></div>
+            <div id="sp-close">✕ CLEAR</div>
+          </div>
+        </div>
+      </div>
+      <div id="ustrip">
+        <div class="uc police" id="uc-police"><div class="uc-cnt" id="cn-police">1</div><div class="ui-big">🚔</div><div class="ul police">POLICE</div><div class="us ok" id="st-police">READY</div></div>
+        <div class="uc fire"   id="uc-fire">  <div class="uc-cnt" id="cn-fire">1</div>  <div class="ui-big">🚒</div><div class="ul fire">FIRE</div>    <div class="us ok" id="st-fire">READY</div></div>
+        <div class="uc amb"    id="uc-amb">   <div class="uc-cnt" id="cn-amb">1</div>   <div class="ui-big">🚑</div><div class="ul amb">MEDIC</div>   <div class="us ok" id="st-amb">READY</div></div>
+        <div class="uc heli"   id="uc-heli">  <div class="uc-cnt" id="cn-heli">1</div>  <div class="ui-big">🚁</div><div class="ul heli">HELI</div>    <div class="us ok" id="st-heli">READY</div></div>
+        <button id="upg-btn"><div id="upg-icon">⬆</div><div id="upg-label">UPGRADES</div></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ghost"></div>
+
+<div id="um">
+  <div class="mb">
+    <div><div class="mt">UPGRADE CENTER</div><div class="mt-sub">TAP TILE TO PURCHASE · HOVER FOR DETAILS</div></div>
+    <div id="ul2"></div>
+    <button class="mc" id="um-close">✕  CLOSE</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════  AUDIO  ═══════════════════════════════════════ */
+let AC=null, MUTED=false;
+function ensureAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}
+function tone(f,type,dur,vol=0.14,delay=0){
+  if(MUTED||!AC)return;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.connect(g);g.connect(AC.destination);
+  o.type=type;o.frequency.setValueAtTime(f,AC.currentTime+delay);
+  g.gain.setValueAtTime(0,AC.currentTime+delay);
+  g.gain.linearRampToValueAtTime(vol,AC.currentTime+delay+0.02);
+  g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+delay+dur);
+  o.start(AC.currentTime+delay);o.stop(AC.currentTime+delay+dur+0.05);
+}
+function sfxAlert(){tone(880,'sine',.12,.16);tone(660,'sine',.12,.12,.13);tone(880,'sine',.12,.14,.26);}
+function sfxDispatch(){tone(440,'square',.07,.10);tone(550,'square',.07,.09,.08);tone(660,'square',.1,.10,.16);}
+function sfxResolve(){[523,659,784,1047].forEach((f,i)=>tone(f,'sine',.2,.12,i*.08));}
+function sfxTimeout(){tone(200,'sawtooth',.28,.14);tone(150,'sawtooth',.38,.11,.2);}
+function sfxSiren(t){const f=t==='police'?880:t==='fire'?700:t==='heli'?550:620;[0,1,2].forEach(i=>{tone(f,'sine',.1,.07,i*.13);tone(f*.8,'sine',.1,.06,i*.13+.065);});}
+
+document.getElementById('mute-btn').addEventListener('click',()=>{
+  MUTED=!MUTED;
+  const b=document.getElementById('mute-btn');
+  b.textContent=MUTED?'🔇':'🔊';
+  b.classList.toggle('muted',MUTED);
+});
+
+/* ═══════════════════════════════════════  MAP GRID  ═══════════════════════════════════════
+   11 cols × 8 rows — 12 vertical lines, 9 horizontal lines
+*/
+const CX=[0,.09,.18,.27,.36,.45,.54,.63,.72,.81,.90,1.0];
+const RY=[0,.125,.25,.375,.50,.625,.75,.875,1.0];
+
+function nid(col,row){return row*12+col;}
+const NODES=[];
+for(let r=0;r<9;r++) for(let c=0;c<12;c++) NODES.push({id:nid(c,r),x:CX[c],y:RY[r]});
+const EDGES=[];
+for(let r=0;r<9;r++) for(let c=0;c<11;c++) EDGES.push([nid(c,r),nid(c+1,r)]);
+for(let r=0;r<8;r++) for(let c=0;c<12;c++) EDGES.push([nid(c,r),nid(c,r+1)]);
+const ADJ=NODES.map(()=>[]);
+EDGES.forEach(([a,b])=>{ADJ[a].push(b);ADJ[b].push(a);});
+
+function d2(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+function nearestNode(x,y){
+  let best=0,bd=1e9;
+  NODES.forEach(n=>{const d=Math.hypot(n.x-x,n.y-y);if(d<bd){bd=d;best=n.id;}});
+  return best;
+}
+function pathfind(s,e){
+  if(s===e)return[s];
+  const dist=Array(NODES.length).fill(Infinity),prev=Array(NODES.length).fill(-1);
+  dist[s]=0;const vis=new Set(),q=[s];
+  while(q.length){
+    q.sort((a,b2)=>dist[a]-dist[b2]);
+    const u=q.shift();if(vis.has(u))continue;vis.add(u);if(u===e)break;
+    ADJ[u].forEach(v=>{const nd=dist[u]+d2(NODES[u],NODES[v]);if(nd<dist[v]){dist[v]=nd;prev[v]=u;q.push(v);}});
+  }
+  const p=[];let c=e;while(c!==-1){p.unshift(c);c=prev[c];}
+  return p.length>1?p:[s,e];
+}
+function pathLen(path){let d=0;for(let i=0;i<path.length-1;i++)d+=d2(NODES[path[i]],NODES[path[i+1]]);return d;}
+
+/* ═══════════════════════════════════════  CITY BLOCKS  ═══════════════════════════════════════ */
+const CELL_DEFS=[
+  {col:0, row:0,t:'water',        lb:'NORTH\nHARBOR'},
+  {col:1, row:0,t:'water',        lb:'HARBOR\nBAY'},
+  {col:2, row:0,t:'commercial',   lb:'FISH\nMARKET'},
+  {col:3, row:0,t:'civic',        lb:'CITY\nHALL'},
+  {col:4, row:0,t:'civic',        lb:'COURT\nHOUSE'},
+  {col:5, row:0,t:'hospital',     lb:'MEMORIAL\nHOSPITAL'},
+  {col:6, row:0,t:'block',        lb:'NORTH\nHILL'},
+  {col:7, row:0,t:'block',        lb:'EAST\nRIDGE'},
+  {col:8, row:0,t:'commercial',   lb:'TECH\nPARK'},
+  {col:9, row:0,t:'block',        lb:'AIRPORT\nROAD'},
+  {col:10,row:0,t:'water',        lb:'EAST\nHARBOR'},
+  {col:0, row:1,t:'block',        lb:'OLD PORT'},
+  {col:1, row:1,t:'station_police',lb:'POLICE HQ'},
+  {col:2, row:1,t:'park',         lb:'CENTRAL\nPARK'},
+  {col:3, row:1,t:'block',        lb:'MIDTOWN'},
+  {col:4, row:1,t:'block',        lb:'FINANCE\nDIST'},
+  {col:5, row:1,t:'commercial',   lb:'GRAND\nSTATION'},
+  {col:6, row:1,t:'block',        lb:'EAST\nDOCKS'},
+  {col:7, row:1,t:'commercial',   lb:'MEDIA\nCENTRE'},
+  {col:8, row:1,t:'block',        lb:'SILICON\nROW'},
+  {col:9, row:1,t:'station_heli', lb:'HELIPORT'},
+  {col:10,row:1,t:'block',        lb:'AIRPORT\nDIST'},
+  {col:0, row:2,t:'block',        lb:'RIVERSIDE'},
+  {col:1, row:2,t:'block',        lb:'WEST END'},
+  {col:2, row:2,t:'park',         lb:'RIVERSIDE\nPARK'},
+  {col:3, row:2,t:'civic',        lb:'LIBRARY SQ'},
+  {col:4, row:2,t:'commercial',   lb:'HOTEL ROW'},
+  {col:5, row:2,t:'station_amb',  lb:'EMS BASE'},
+  {col:6, row:2,t:'block',        lb:'EASTSIDE'},
+  {col:7, row:2,t:'block',        lb:'EAST\nGARDENS'},
+  {col:8, row:2,t:'commercial',   lb:'MALL\nDIST'},
+  {col:9, row:2,t:'block',        lb:'GROVE\nPARK'},
+  {col:10,row:2,t:'block',        lb:'FAR EAST'},
+  {col:0, row:3,t:'water',        lb:'SOUTH\nINLET'},
+  {col:1, row:3,t:'block',        lb:'SOUTH WEST'},
+  {col:2, row:3,t:'commercial',   lb:'BROAD ST'},
+  {col:3, row:3,t:'block',        lb:'THEATER\nDIST'},
+  {col:4, row:3,t:'block',        lb:'HILLCREST'},
+  {col:5, row:3,t:'block',        lb:'HARBOR\nVIEW'},
+  {col:6, row:3,t:'block',        lb:'MILL DIST'},
+  {col:7, row:3,t:'civic',        lb:'MUSEUM\nQUARTER'},
+  {col:8, row:3,t:'block',        lb:'NORTH\nSUBURBS'},
+  {col:9, row:3,t:'block',        lb:'PINE\nESTATE'},
+  {col:10,row:3,t:'park',         lb:'EAST\nCOMMON'},
+  {col:0, row:4,t:'block',        lb#game.on{display:flex;}
 /* Map takes remaining space after the bottom panel */
 #map-wrap{flex:1 1 0;min-height:0;position:relative;overflow:hidden;}
 #map-canvas{position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;}
