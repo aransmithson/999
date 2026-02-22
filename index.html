@@ -35,23 +35,25 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);font-fam
 
 #game{display:none;flex-direction:column;width:100vw;height:100vh;}
 #game.on{display:flex;}
-#map-wrap{flex:0 0 75%;position:relative;overflow:hidden;}
+/* Map takes remaining space after the bottom panel */
+#map-wrap{flex:1 1 0;min-height:0;position:relative;overflow:hidden;}
 #map-canvas{position:absolute;top:0;left:0;width:100%;height:100%;cursor:crosshair;}
 
-#bot{flex:1;background:var(--panel);border-top:2px solid var(--border);display:flex;flex-direction:column;position:relative;z-index:10;overflow:hidden;min-height:0;}
+/* Bottom panel: fixed height based on content, never more than 35vh */
+#bot{flex:0 0 auto;max-height:35vh;background:var(--panel);border-top:2px solid var(--border);display:flex;flex-direction:column;position:relative;z-index:10;overflow:hidden;}
 
-#ticker{display:flex;align-items:center;height:24px;flex-shrink:0;background:rgba(0,0,0,.4);border-bottom:1px solid var(--border);overflow:hidden;font-size:10px;padding:0 8px;gap:8px;}
+#ticker{display:flex;align-items:center;height:20px;flex-shrink:0;background:rgba(0,0,0,.4);border-bottom:1px solid var(--border);overflow:hidden;font-size:9px;padding:0 8px;gap:8px;}
 #t-badge{background:var(--red);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:11px;padding:1px 7px;letter-spacing:.1em;flex-shrink:0;animation:blink2 .9s infinite;}
 #t-inner{display:flex;gap:14px;white-space:nowrap;overflow:hidden;flex:1;}
 .ti{display:flex;align-items:center;gap:5px;flex-shrink:0;}
 .td{width:6px;height:6px;border-radius:50%;}
 
-#sbar{display:flex;align-items:center;justify-content:space-around;padding:3px 8px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3);flex-shrink:0;gap:2px;}
+#sbar{display:flex;align-items:center;justify-content:space-around;padding:2px 8px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3);flex-shrink:0;gap:2px;}
 .si{display:flex;flex-direction:column;align-items:center;}
-.sl{font-size:7px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;}
-.sv{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;}
+.sl{font-size:6px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;}
+.sv{font-family:'Bebas Neue',sans-serif;font-size:17px;line-height:1;}
 .sv.g{color:var(--green);}.sv.b{color:var(--accent);}.sv.r{color:var(--amber);}.sv.w{color:var(--bright);}
-#ra-el{font-size:20px;line-height:1;}
+#ra-el{font-size:17px;line-height:1;}
 #mute-btn{
   background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.28);
   border-radius:4px;color:var(--accent);font-size:13px;
@@ -60,8 +62,8 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);font-fam
 }
 #mute-btn.muted{opacity:.4;border-color:var(--dim);}
 
-#main-row{flex:1;display:flex;flex-direction:row;min-height:0;overflow:hidden;}
-#status-panel{flex:0 0 40%;border-right:1px solid var(--border);background:rgba(0,0,0,.2);display:flex;flex-direction:column;padding:5px 8px 4px;overflow:hidden;}
+#main-row{flex:1;display:flex;flex-direction:row;min-height:60px;overflow:hidden;}
+#status-panel{flex:0 0 38%;border-right:1px solid var(--border);background:rgba(0,0,0,.2);display:flex;flex-direction:column;padding:4px 7px 3px;overflow:hidden;}
 #sp-body{position:relative;flex:1;min-height:0;}
 #sp-idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;opacity:.3;transition:opacity .15s;}
 #sp-idle.hidden{opacity:0;pointer-events:none;}
@@ -83,23 +85,23 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);font-fam
 #sp-close{font-size:7px;color:var(--dim);cursor:pointer;letter-spacing:.05em;flex-shrink:0;text-align:right;}
 #sp-close:hover{color:var(--text);}
 
-#ustrip{flex:0 0 60%;display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 6px;overflow:hidden;}
-.uc{background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:5px;padding:4px 5px;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:grab;user-select:none;transition:border-color .2s,box-shadow .2s;position:relative;flex:1;max-width:70px;}
+#ustrip{flex:0 0 62%;display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 4px;overflow:hidden;}
+.uc{background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:5px;padding:3px 4px;display:flex;flex-direction:column;align-items:center;gap:0px;cursor:grab;user-select:none;transition:border-color .2s,box-shadow .2s;position:relative;flex:1;min-width:0;}
 .uc.police{border-color:rgba(68,153,255,.35);}
 .uc.fire{border-color:rgba(255,85,0,.35);}
 .uc.amb{border-color:rgba(255,51,153,.35);}
 .uc.heli{border-color:rgba(170,68,255,.35);}
 .uc.busy{opacity:.38;cursor:not-allowed;}
 .uc:not(.busy):hover{box-shadow:0 0 10px rgba(0,212,255,.18);}
-.ui-big{font-size:20px;line-height:1;}
-.ul{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:8px;letter-spacing:.06em;}
+.ui-big{font-size:17px;line-height:1.1;}
+.ul{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:7px;letter-spacing:.04em;}
 .ul.police{color:var(--police);}.ul.fire{color:var(--fire);}.ul.amb{color:var(--amb);}.ul.heli{color:var(--heli);}
-.us{font-size:7px;}.us.ok{color:var(--green);}.us.on{color:var(--amber);}
-.uc-cnt{position:absolute;top:2px;right:3px;background:var(--accent);color:#060c12;font-size:7px;font-weight:bold;width:12px;height:12px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
-#upg-btn{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.35);border-radius:5px;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-weight:700;padding:4px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;max-width:62px;transition:border-color .2s,box-shadow .2s;}
+.us{font-size:6px;}.us.ok{color:var(--green);}.us.on{color:var(--amber);}
+.uc-cnt{position:absolute;top:1px;right:2px;background:var(--accent);color:#060c12;font-size:6px;font-weight:bold;width:10px;height:10px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+#upg-btn{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.35);border-radius:5px;color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-weight:700;padding:3px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0px;flex:1;min-width:0;transition:border-color .2s,box-shadow .2s;}
 #upg-btn:hover{box-shadow:0 0 10px rgba(0,212,255,.25);border-color:var(--accent);}
-#upg-icon{font-size:17px;line-height:1;}
-#upg-label{font-size:7px;letter-spacing:.05em;}
+#upg-icon{font-size:15px;line-height:1.1;}
+#upg-label{font-size:6px;letter-spacing:.04em;}
 
 #ghost{position:fixed;pointer-events:none;z-index:9999;font-size:28px;transform:translate(-50%,-50%);display:none;}
 
@@ -108,41 +110,82 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);font-fam
 #um.on{display:flex;}
 .mb{
   background:var(--panel);border:1px solid var(--accent);border-radius:10px;
-  padding:16px;width:min(400px,95vw);max-height:88vh;overflow-y:auto;
-  display:flex;flex-direction:column;gap:10px;
+  padding:12px 12px 14px;width:min(420px,96vw);max-height:96vh;
+  display:flex;flex-direction:column;gap:8px;overflow:hidden;
 }
-.mt{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);letter-spacing:.15em;line-height:1;}
-.mt-sub{font-size:8px;color:var(--dim);letter-spacing:.1em;}
+.mb-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-shrink:0;}
+.mt{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);letter-spacing:.15em;line-height:1;}
+.mt-sub{font-size:7px;color:var(--dim);letter-spacing:.1em;margin-top:1px;}
+#um-close{
+  background:transparent;border:1px solid var(--border);color:var(--text);
+  font-size:14px;line-height:1;width:26px;height:26px;
+  border-radius:5px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:border-color .15s,color .15s;
+}
+#um-close:hover{border-color:var(--accent);color:var(--accent);}
 
-/* Upgrade tile grid — 3 columns */
-#ul2{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;align-items:start;}
+/* Upgrade tile grid — 5 columns, all tiers in one view */
+#ul2{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;align-items:start;}
 .utile{
-  background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:8px;
-  padding:10px 5px 8px;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:6px;
+  padding:7px 3px 6px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
   transition:border-color .18s,background .18s;position:relative;
-  min-height:80px;justify-content:center;
+  justify-content:center;
 }
 .utile:hover:not(.bought):not(.cant-afford){border-color:var(--accent);background:rgba(0,212,255,.06);}
 .utile.bought{opacity:.32;cursor:default;}
 .utile.cant-afford{cursor:not-allowed;}
 .tier-row{
   grid-column:1/-1;
-  display:flex;align-items:center;gap:8px;
-  margin-top:4px;
+  display:flex;align-items:center;gap:6px;
+  margin-top:2px;
 }
-.tier-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;letter-spacing:.12em;white-space:nowrap;}
+.tier-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;letter-spacing:.1em;white-space:nowrap;}
 .tier-line{flex:1;height:1px;background:currentColor;opacity:.22;}
-.utile-icon{font-size:24px;line-height:1;}
-.utile-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;color:var(--bright);text-align:center;line-height:1.2;}
-.utile-price{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;color:var(--green);}
+.utile-icon{font-size:18px;line-height:1;}
+.utile-name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:8px;color:var(--bright);text-align:center;line-height:1.2;}
+.utile-price{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:10px;color:var(--green);}
 .utile-price.cant{color:var(--amber);}
-.utile-price.owned{color:var(--green);font-size:9px;letter-spacing:.05em;}
-.utile-check{position:absolute;top:4px;right:5px;font-size:10px;color:var(--green);}
-.mc{width:100%;background:transparent;border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;padding:8px;cursor:pointer;border-radius:4px;margin-top:2px;}
-.mc:hover{border-color:var(--accent);}
+.utile-price.owned{color:var(--green);font-size:8px;letter-spacing:.04em;}
+.utile-check{position:absolute;top:3px;right:4px;font-size:9px;color:var(--green);}
 
 body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,rgba(0,212,255,.012) 0,rgba(0,212,255,.012) 1px,transparent 1px,transparent 3px);pointer-events:none;z-index:8000;}
+
+/* ── GAME OVER ── */
+#go-screen{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.92);
+  z-index:7000;align-items:center;justify-content:center;
+}
+#go-screen.on{display:flex;}
+#go-box{
+  background:var(--panel);border:2px solid var(--red);border-radius:12px;
+  padding:28px 32px;width:min(340px,88vw);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  animation:goIn .4s ease;
+}
+@keyframes goIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+#go-face{font-size:56px;line-height:1;animation:shake .5s ease .2s;}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
+#go-title{
+  font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--red);
+  letter-spacing:.12em;line-height:1;
+  text-shadow:0 0 20px rgba(255,51,51,.6);
+}
+#go-sub{font-family:'Barlow Condensed',sans-serif;font-weight:400;font-size:11px;letter-spacing:.18em;color:var(--amber);text-transform:uppercase;margin-top:-4px;}
+#go-stats{display:flex;gap:24px;margin:8px 0;}
+.go-stat{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.go-sl{font-size:8px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;}
+.go-sv{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--bright);}
+#go-btn{
+  margin-top:6px;font-family:'Bebas Neue',sans-serif;font-size:22px;
+  letter-spacing:.18em;color:#060c12;background:var(--red);
+  border:none;padding:9px 36px;border-radius:4px;cursor:pointer;
+  box-shadow:0 0 20px rgba(255,51,51,.4);
+  transition:transform .15s,box-shadow .15s;
+}
+#go-btn:hover{transform:scale(1.05);box-shadow:0 0 32px rgba(255,51,51,.6);}
 </style>
 </head>
 <body>
@@ -208,11 +251,28 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
 <div id="ghost"></div>
 
+<!-- GAME OVER SCREEN -->
+<div id="go-screen">
+  <div id="go-box">
+    <div id="go-face">😡</div>
+    <div id="go-title">CITY IN CRISIS</div>
+    <div id="go-sub">PUBLIC CONFIDENCE COLLAPSED</div>
+    <div id="go-stats">
+      <div class="go-stat"><span class="go-sl">SCORE</span><span class="go-sv" id="go-score">0</span></div>
+      <div class="go-stat"><span class="go-sl">RESOLVED</span><span class="go-sv" id="go-res">0</span></div>
+      <div class="go-stat"><span class="go-sl">WAVE</span><span class="go-sv" id="go-wave">1</span></div>
+    </div>
+    <button id="go-btn">TRY AGAIN</button>
+  </div>
+</div>
+
 <div id="um">
   <div class="mb">
-    <div><div class="mt">UPGRADE CENTER</div><div class="mt-sub">TAP TILE TO PURCHASE · HOVER FOR DETAILS</div></div>
+    <div class="mb-header">
+      <div><div class="mt">UPGRADE CENTER</div><div class="mt-sub">TAP TILE TO PURCHASE</div></div>
+      <button id="um-close">✕</button>
+    </div>
     <div id="ul2"></div>
-    <button class="mc" id="um-close">✕  CLOSE</button>
   </div>
 </div>
 
@@ -343,16 +403,16 @@ const CELL_DEFS=[
   {col:5, row:5,t:'civic',        lb:'CIVIC\nCENTRE'},
   {col:6, row:5,t:'commercial',   lb:'WAREHOUSE\nDIST'},
   {col:7, row:5,t:'block',        lb:'PORTSIDE'},
-  {col:8, row:5,t:'station_police',lb:'SOUTH\nPOLICE'},
+  {col:8, row:5,t:'block',        lb:'SOUTH\nPOLICE'},
   {col:9, row:5,t:'block',        lb:'GREENBELT'},
   {col:10,row:5,t:'block',        lb:'FARSIDE'},
   {col:0, row:6,t:'water',        lb:'SOUTH\nBAY'},
   {col:1, row:6,t:'block',        lb:'DOCKERS\nROW'},
-  {col:2, row:6,t:'station_fire', lb:'FIRE STN\nNO. 2'},
+  {col:2, row:6,t:'block',        lb:'WEST\nDOCKS'},
   {col:3, row:6,t:'park',         lb:'SOUTHERN\nPARK'},
   {col:4, row:6,t:'block',        lb:'SOUTH\nGATE'},
   {col:5, row:6,t:'block',        lb:'MERSEY\nDOCKS'},
-  {col:6, row:6,t:'hospital',     lb:'SOUTH\nHOSPITAL'},
+  {col:6, row:6,t:'civic',        lb:'SOUTH\nMEDICAL'},
   {col:7, row:6,t:'block',        lb:'ORION\nESTATE'},
   {col:8, row:6,t:'block',        lb:'NEWTON\nHEATH'},
   {col:9, row:6,t:'commercial',   lb:'FOOD DIST'},
@@ -362,7 +422,7 @@ const CELL_DEFS=[
   {col:2, row:7,t:'block',        lb:'LAKESIDE'},
   {col:3, row:7,t:'block',        lb:'LOWFIELDS'},
   {col:4, row:7,t:'block',        lb:'WESTBROOK'},
-  {col:5, row:7,t:'station_amb',  lb:'SOUTH EMS'},
+  {col:5, row:7,t:'block',        lb:'SOUTH\nEMS'},
   {col:6, row:7,t:'block',        lb:'EAST MOOR'},
   {col:7, row:7,t:'block',        lb:'COPPERFIELD'},
   {col:8, row:7,t:'block',        lb:'BOUNDARY\nEND'},
@@ -383,15 +443,9 @@ Object.entries(STATION_DEFS).forEach(([type,s])=>{
 });
 
 /* Hospitals — node at top-left corner of their cell */
-const HOSPITALS=[
-  {nid:nid(5,0), x:(CX[5]+CX[6])/2, y:(RY[0]+RY[1])/2},
-  {nid:nid(6,6), x:(CX[6]+CX[7])/2, y:(RY[6]+RY[7])/2},
-];
-function nearestHospital(sx,sy){
-  return HOSPITALS.reduce((best,h)=>
-    Math.hypot(sx-h.x,sy-h.y)<Math.hypot(sx-best.x,sy-best.y)?h:best
-  );
-}
+// Single hospital - Memorial Hospital (col 5, row 0)
+const HOSPITAL={nid:nid(5,0), x:(CX[5]+CX[6])/2, y:(RY[0]+RY[1])/2};
+function nearestHospital(){return HOSPITAL;}
 
 const UCOLS={police:'#4499ff',fire:'#ff5500',amb:'#ff3399',heli:'#aa44ff'};
 const UICONS={police:'🚔',fire:'🚒',amb:'🚑',heli:'🚁'};
@@ -632,26 +686,100 @@ function drawVehicleTopDown(ctx,vx,vy,angle,col,type,t,active,returning,working)
   if(type==='heli'){
     ctx.rotate(angle);
     ctx.globalAlpha=returning?0.72:1;
-    // Shadow
-    ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(2,2,BL,BW*1.2,0,0,Math.PI*2);ctx.fill();
-    // Hull
-    ctx.fillStyle='#1a0a30';ctx.strokeStyle=col;ctx.lineWidth=1;
-    ctx.beginPath();ctx.ellipse(0,0,BL,BW*1.2,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle=col+'40';ctx.fillRect(-BL+1,-1,BL*2-2,2);
+    const HS=11;
+
+    // Altitude shadow
+    ctx.fillStyle='rgba(0,0,0,0.18)';
+    ctx.beginPath();ctx.ellipse(5,6,HS*0.9,HS*0.5,0,0,Math.PI*2);ctx.fill();
+
+    // Main rotor blur disc
+    const spin=(t/40)%(Math.PI*2);
+    const rg=ctx.createRadialGradient(0,0,0,0,0,HS*1.6);
+    rg.addColorStop(0,col+'22');rg.addColorStop(0.7,col+'0a');rg.addColorStop(1,'transparent');
+    ctx.fillStyle=rg;
+    ctx.beginPath();ctx.ellipse(0,0,HS*1.6,HS*1.6,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=col+'28';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.ellipse(0,0,HS*1.55,HS*1.55,0,0,Math.PI*2);ctx.stroke();
+    // Primary blades
+    ctx.save();ctx.rotate(spin);
+    ctx.strokeStyle=col+'60';ctx.lineWidth=2.8;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(-HS*1.5,0);ctx.lineTo(HS*1.5,0);ctx.stroke();
+    ctx.strokeStyle='rgba(0,0,0,0.2)';ctx.lineWidth=0.8;
+    ctx.beginPath();ctx.moveTo(-HS*1.5,0);ctx.lineTo(HS*1.5,0);ctx.stroke();
+    ctx.restore();
+    // Secondary blades (4-blade look)
+    ctx.save();ctx.rotate(spin+Math.PI/2);
+    ctx.strokeStyle=col+'40';ctx.lineWidth=2;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(-HS*1.4,0);ctx.lineTo(HS*1.4,0);ctx.stroke();
+    ctx.restore();
+
+    // Fuselage teardrop (nose = +x)
+    ctx.fillStyle='#110824';
+    ctx.beginPath();
+    ctx.moveTo(HS*.85,0);
+    ctx.bezierCurveTo(HS*.75,-HS*.5,-HS*.25,-HS*.52,-HS*.48,0);
+    ctx.bezierCurveTo(-HS*.25,HS*.52,HS*.75,HS*.5,HS*.85,0);
+    ctx.closePath();ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=1.1;ctx.stroke();
+
+    // Livery stripe
+    ctx.fillStyle=col+'50';
+    ctx.beginPath();
+    ctx.moveTo(HS*.15,-HS*.13);ctx.lineTo(-HS*.38,-HS*.11);
+    ctx.lineTo(-HS*.38,HS*.11);ctx.lineTo(HS*.15,HS*.13);
+    ctx.closePath();ctx.fill();
+
+    // Cockpit bubble
+    ctx.fillStyle='rgba(120,195,255,0.40)';ctx.strokeStyle='rgba(200,240,255,0.55)';ctx.lineWidth=0.7;
+    ctx.beginPath();
+    ctx.moveTo(HS*.85,0);
+    ctx.bezierCurveTo(HS*.75,-HS*.38,HS*.12,-HS*.38,HS*.08,0);
+    ctx.bezierCurveTo(HS*.12,HS*.38,HS*.75,HS*.38,HS*.85,0);
+    ctx.closePath();ctx.fill();ctx.stroke();
+    // Glare
+    ctx.fillStyle='rgba(255,255,255,0.22)';
+    ctx.beginPath();ctx.ellipse(HS*.56,-HS*.13,HS*.12,HS*.065,-0.35,0,Math.PI*2);ctx.fill();
+
     // Tail boom
-    ctx.fillStyle='#0f0520';ctx.strokeStyle=col+'55';ctx.lineWidth=0.6;
-    ctx.fillRect(-BL*2,-0.8,BL,1.6);ctx.strokeRect(-BL*2,-0.8,BL,1.6);
-    ctx.beginPath();ctx.arc(-BL*2,0,1.8,0,Math.PI*2);ctx.fillStyle=col+'50';ctx.fill();
-    // Spinning rotors
-    const spin=(t/60)%(Math.PI*2);
-    ctx.rotate(spin);ctx.strokeStyle=col+'80';ctx.lineWidth=0.8;
-    for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(i*Math.PI/2)*BL*1.5,Math.sin(i*Math.PI/2)*BL*1.5);ctx.stroke();}
-    ctx.rotate(-spin);
+    ctx.fillStyle='#0c0618';ctx.strokeStyle=col+'38';ctx.lineWidth=0.7;
+    ctx.beginPath();
+    ctx.moveTo(-HS*.42,-HS*.1);ctx.lineTo(-HS*1.6,-HS*.05);
+    ctx.lineTo(-HS*1.6,HS*.05);ctx.lineTo(-HS*.42,HS*.1);
+    ctx.closePath();ctx.fill();ctx.stroke();
+    // Tail fin
+    ctx.fillStyle=col+'28';ctx.strokeStyle=col+'55';ctx.lineWidth=0.6;
+    ctx.beginPath();ctx.moveTo(-HS*.95,-HS*.04);ctx.lineTo(-HS*1.52,-HS*.36);ctx.lineTo(-HS*1.6,-HS*.04);ctx.closePath();
+    ctx.fill();ctx.stroke();
+
+    // Tail rotor
+    const tailSpin=(t/28)%(Math.PI*2);
+    ctx.save();ctx.translate(-HS*1.6,0);ctx.rotate(tailSpin);
+    ctx.strokeStyle=col+'80';ctx.lineWidth=1;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(0,-HS*.38);ctx.lineTo(0,HS*.38);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-HS*.38,0);ctx.lineTo(HS*.38,0);ctx.stroke();
+    ctx.restore();
+
+    // Skids
+    ctx.strokeStyle=col+'55';ctx.lineWidth=1.1;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(HS*.52,-HS*.58);ctx.lineTo(-HS*.32,-HS*.58);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(HS*.28,-HS*.52);ctx.lineTo(HS*.28,-HS*.68);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-HS*.08,-HS*.52);ctx.lineTo(-HS*.08,-HS*.68);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(HS*.52,HS*.58);ctx.lineTo(-HS*.32,HS*.58);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(HS*.28,HS*.52);ctx.lineTo(HS*.28,HS*.68);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-HS*.08,HS*.52);ctx.lineTo(-HS*.08,HS*.68);ctx.stroke();
+
+    // Rotor hub
+    ctx.fillStyle='#1e2c40';ctx.strokeStyle=col;ctx.lineWidth=0.9;
+    ctx.beginPath();ctx.arc(0,0,HS*.16,0,Math.PI*2);ctx.fill();ctx.stroke();
+
     // Beacon
     if(active||working){
-      const ba=(t/280)%(Math.PI*2);
-      ctx.fillStyle='#0e1018';ctx.beginPath();ctx.arc(0,0,1.5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=lightCol;ctx.beginPath();ctx.arc(Math.cos(ba)*2,Math.sin(ba)*2,2,0,Math.PI*2);ctx.fill();
+      const ba=(t/180)%(Math.PI*2);
+      ctx.fillStyle=lightCol;
+      ctx.beginPath();ctx.arc(Math.cos(ba)*HS*.16,Math.sin(ba)*HS*.16,2,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=(returning?0.72:1)*0.12;
+      ctx.fillStyle=lightCol;ctx.beginPath();ctx.arc(0,0,HS*.75,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=returning?0.72:1;
     }
     ctx.globalAlpha=1;ctx.restore();return;
   }
@@ -699,14 +827,66 @@ function drawVehicleTopDown(ctx,vx,vy,angle,col,type,t,active,returning,working)
 }
 
 /* ═══════════════════════════════════════  DRAW VEHICLES  ═══════════════════════════════════════ */
+function heliPos(v){
+  // Returns {x,y,angle} for current heli phase using straight-line lerp
+  let ax,ay,bx,by;
+  if(v.phase==='going'){
+    ax=v.sx;ay=v.sy;bx=v.ex;by=v.ey;
+  } else if(v.phase==='toHosp'){
+    ax=v.hsx||v.ex;ay=v.hsy||v.ey;bx=v.hhx||v.ex;by=v.hhy||v.ey;
+  } else if(v.phase==='returning'){
+    ax=v.rsx||v.hhx||v.ex;ay=v.rsy||v.hhy||v.ey;bx=v.rrx||v.sx;by=v.rry||v.sy;
+  } else return null;
+  const pp=Math.min(1,v.pp);
+  return{
+    x:mx(ax+(bx-ax)*pp),
+    y:my(ay+(by-ay)*pp),
+    angle:Math.atan2(my(by)-my(ay),mx(bx)-mx(ax)),
+  };
+}
+
 function drawVehicles(t){
   G.vehs.forEach(v=>{
     const col=UCOLS[v.type];
+
     if(v.phase==='working'){
       const em=G.ems.find(e=>e.id===v.eid);if(!em)return;
       drawVehicleTopDown(ctx,mx(em.x)+11,my(em.y)-4,0,col,v.type,t,false,false,true);
       return;
     }
+    // Heli landed at hospital — draw parked there
+    if(v.type==='heli'&&v.phase==='landed'){
+      const hosp=nearestHospital();
+      drawVehicleTopDown(ctx,mx(hosp.x)+11,my(hosp.y)-4,0,col,'heli',t,false,false,true);
+      // Show label
+      ctx.fillStyle=col+'88';
+      ctx.font=`bold ${Math.max(5,Math.min(CW*.01,7))}px Barlow Condensed`;ctx.textAlign='center';
+      ctx.fillText('UNLOADING',mx(hosp.x),my(hosp.y)+16);
+      return;
+    }
+
+    // Helicopter uses straight-line position
+    if(v.type==='heli'){
+      const pos=heliPos(v);if(!pos)return;
+      const{x:vx,y:vy,angle}=pos;
+      // Faint straight-line trail
+      const isRet=v.phase==='returning'||v.phase==='toHosp';
+      for(let s=5;s>=1;s--){
+        const tpp=Math.max(0,v.pp-s*0.04);
+        let tax,tay,tbx,tby;
+        if(v.phase==='going'){tax=v.sx;tay=v.sy;tbx=v.ex;tby=v.ey;}
+        else if(v.phase==='toHosp'){tax=v.hsx||v.ex;tay=v.hsy||v.ey;tbx=v.hhx||v.ex;tby=v.hhy||v.ey;}
+        else{tax=v.rsx||v.ex;tay=v.rsy||v.ey;tbx=v.rrx||v.sx;tby=v.rry||v.sy;}
+        const tx=mx(tax+(tbx-tax)*tpp),ty=my(tay+(tby-tay)*tpp);
+        const alpha=isRet?(s===1?'22':'0e'):(s===1?'66':s===2?'33':'18');
+        ctx.beginPath();ctx.arc(tx,ty,Math.max(.3,1.8-s*.28),0,Math.PI*2);
+        ctx.fillStyle=col+alpha;ctx.fill();
+      }
+      drawVehicleTopDown(ctx,vx,vy,angle,col,'heli',t,v.phase==='going',isRet,false);
+      return;
+    }
+
+    // Ground vehicles follow road paths
     const activePath=v.phase==='going'?v.path:v.phase==='toHosp'?v.hpath:v.rpath;
     if(!activePath||activePath.length<2)return;
     const pos=posOnPath(activePath,v.pp);if(!pos)return;
@@ -738,7 +918,7 @@ const G={
   ems:[],vehs:[],nextId:1,
   spawnT:0,waveT:0,lastT:0,
   veh:{police:{total:1,busy:0},fire:{total:1,busy:0},amb:{total:1,busy:0},heli:{total:1,busy:0}},
-  efficiency:1.0,upgrades:new Set(),
+  efficiency:1.0,upgrades:new Set(),gameOver:false,
 };
 
 function spawnInterval(){
@@ -749,6 +929,7 @@ function spawnInterval(){
 
 /* ═══════════════════════════════════════  GAME LOOP  ═══════════════════════════════════════ */
 function loop(t){
+  if(G.gameOver)return;
   if(!G.lastT)G.lastT=t;
   const dt=Math.min(t-G.lastT,80);G.lastT=t;
 
@@ -779,56 +960,97 @@ function loop(t){
   G.vehs.forEach(v=>{
     const spd=v.type==='heli'?HSPD:SPD;
 
-    if(v.phase==='going'){
-      const plPx=pathLen(v.path)*CW;
-      v.pp+=plPx>0?(spd/plPx)*dt:0.002*dt;
-      if(v.pp>=1){
-        v.pp=0;v.phase='working';v.ws=t;
-        const em=G.ems.find(e=>e.id===v.eid);
-        if(em){const d=em.disp.find(d=>d.type===v.type&&!d.inProg);if(d)d.inProg=true;}
-        sfxSiren(v.type);
+    // HELICOPTER: straight-line flight across the map, ignores roads
+    if(v.type==='heli'){
+      if(v.phase==='going'){
+        const distPx=Math.hypot((v.ex-v.sx)*CW,(v.ey-v.sy)*CH)||1;
+        v.pp=Math.min(1,v.pp+spd/distPx*dt);
+        if(v.pp>=1){
+          v.pp=0;v.phase='working';v.ws=t;
+          const em=G.ems.find(e=>e.id===v.eid);
+          if(em){const d=em.disp.find(d=>d.type==='heli'&&!d.inProg);if(d)d.inProg=true;}
+          sfxSiren('heli');
+        }
       }
-    }
-    else if(v.phase==='working'){
-      const pg=Math.min(1,(t-v.ws)/v.wd);
-      const em=G.ems.find(e=>e.id===v.eid);
-      if(em){const d=em.disp.find(d=>d.type===v.type&&d.inProg&&!d.done);if(d)d.progress=pg;}
-      if(pg>=1){
-        // Mark done
-        const em2=G.ems.find(e=>e.id===v.eid);
-        if(em2){const d=em2.disp.find(d=>d.type===v.type&&d.inProg&&!d.done);if(d)d.done=true;checkResolved(v.eid);}
-
-        if(v.type==='amb'||v.type==='heli'){
-          // Path: scene node → nearest hospital node
-          const sceneNid=nearestNode(v.ex,v.ey);
-          const hosp=nearestHospital(v.ex,v.ey);
-          v.hpath=pathfind(sceneNid,hosp.nid);
-          v.hospNid=hosp.nid;           // remember where hospital is
+      else if(v.phase==='working'){
+        const pg=Math.min(1,(t-v.ws)/v.wd);
+        const em=G.ems.find(e=>e.id===v.eid);
+        if(em){const d=em.disp.find(d=>d.type==='heli'&&d.inProg&&!d.done);if(d)d.progress=pg;}
+        if(pg>=1){
+          const em2=G.ems.find(e=>e.id===v.eid);
+          if(em2){const d=em2.disp.find(d=>d.type==='heli'&&d.inProg&&!d.done);if(d)d.done=true;checkResolved(v.eid);}
+          const hosp=nearestHospital();
+          v.hsx=v.ex;v.hsy=v.ey;
+          v.hhx=hosp.x;v.hhy=hosp.y;
           v.phase='toHosp';v.pp=0;
-        } else {
-          const st=STATION_DEFS[v.type];
-          v.rpath=pathfind(nearestNode(v.ex,v.ey),st.nid);
+        }
+      }
+      else if(v.phase==='toHosp'){
+        const distPx=Math.hypot((v.hhx-v.hsx)*CW,(v.hhy-v.hsy)*CH)||1;
+        v.pp=Math.min(1,v.pp+spd/distPx*dt);
+        if(v.pp>=1){
+          // Land at hospital — pause 3s to unload patient
+          v.phase='landed';v.landedAt=t;v.pp=1;
+        }
+      }
+      else if(v.phase==='landed'){
+        if(t-v.landedAt>=3000){
+          const st=STATION_DEFS.heli;
+          v.rsx=v.hhx;v.rsy=v.hhy;
+          v.rrx=st.x;v.rry=st.y;
           v.phase='returning';v.pp=0;
         }
       }
-    }
-    else if(v.phase==='toHosp'){
-      const plPx=pathLen(v.hpath)*CW;
-      v.pp+=plPx>0?(spd/plPx)*dt:0.002*dt;
-      if(v.pp>=1){
-        // Hospital arrived — path from hospital node back to station
-        const st=STATION_DEFS[v.type];
-        v.rpath=pathfind(v.hospNid,st.nid);   // ← fix: start FROM hospital, not scene
-        v.phase='returning';v.pp=0;
+      else if(v.phase==='returning'){
+        const distPx=Math.hypot((v.rrx-v.rsx)*CW,(v.rry-v.rsy)*CH)||1;
+        v.pp=Math.min(1,v.pp+spd/distPx*dt);
+        if(v.pp>=1){v.done=true;G.veh.heli.busy=Math.max(0,G.veh.heli.busy-1);updateCards();}
       }
     }
-    else if(v.phase==='returning'){
-      const plPx=pathLen(v.rpath)*CW;
-      v.pp+=plPx>0?(spd/plPx)*dt:0.002*dt;
-      if(v.pp>=1){
-        v.done=true;
-        G.veh[v.type].busy=Math.max(0,G.veh[v.type].busy-1);
-        updateCards();
+    // GROUND VEHICLES: follow road pathfinding
+    else {
+      if(v.phase==='going'){
+        const plPx=pathLen(v.path)*CW;
+        v.pp+=plPx>0?(spd/plPx)*dt:0.002*dt;
+        if(v.pp>=1){
+          v.pp=0;v.phase='working';v.ws=t;
+          const em=G.ems.find(e=>e.id===v.eid);
+          if(em){const d=em.disp.find(d=>d.type===v.type&&!d.inProg);if(d)d.inProg=true;}
+          sfxSiren(v.type);
+        }
+      }
+      else if(v.phase==='working'){
+        const pg=Math.min(1,(t-v.ws)/v.wd);
+        const em=G.ems.find(e=>e.id===v.eid);
+        if(em){const d=em.disp.find(d=>d.type===v.type&&d.inProg&&!d.done);if(d)d.progress=pg;}
+        if(pg>=1){
+          const em2=G.ems.find(e=>e.id===v.eid);
+          if(em2){const d=em2.disp.find(d=>d.type===v.type&&d.inProg&&!d.done);if(d)d.done=true;checkResolved(v.eid);}
+          if(v.type==='amb'){
+            const hosp=nearestHospital();
+            v.hpath=pathfind(nearestNode(v.ex,v.ey),hosp.nid);
+            v.hospNid=hosp.nid;
+            v.phase='toHosp';v.pp=0;
+          } else {
+            const st=STATION_DEFS[v.type];
+            v.rpath=pathfind(nearestNode(v.ex,v.ey),st.nid);
+            v.phase='returning';v.pp=0;
+          }
+        }
+      }
+      else if(v.phase==='toHosp'){
+        const plPx=pathLen(v.hpath)*CW;
+        v.pp+=plPx>0?(spd/plPx)*dt:0.002*dt;
+        if(v.pp>=1){
+          const st=STATION_DEFS[v.type];
+          v.rpath=pathfind(v.hospNid,st.nid);
+          v.phase='returning';v.pp=0;
+        }
+      }
+      else if(v.phase==='returning'){
+        const plPx=pathLen(v.rpath)*CW;
+        v.pp+=plPx>0?(spd/plPx)*dt:0.002*dt;
+        if(v.pp>=1){v.done=true;G.veh[v.type].busy=Math.max(0,G.veh[v.type].busy-1);updateCards();}
       }
     }
   });
@@ -840,6 +1062,7 @@ function loop(t){
       const tMax=Math.max(16000,34000-G.wave*1200);
       if(t-e.born>tMax&&!e.fullyDisp){
         e.timedOut=true;G.rating=Math.max(0,G.rating-1);updateUI();sfxTimeout();
+        if(G.rating<=0)triggerGameOver();
       }
     }
   });
@@ -876,7 +1099,9 @@ function dispatch(type,eid){
   const wd=(2000+Math.random()*3000)/G.efficiency;
 
   em.disp.push({type,inProg:false,progress:0,done:false});
-  G.vehs.push({type,phase:'going',path,rpath:null,hpath:null,hospNid:null,pp:0,eid,ex:em.x,ey:em.y,wd,ws:0});
+  // For helicopter: store straight-line start coords (station position)
+  const sx=st.x, sy=st.y;
+  G.vehs.push({type,phase:'going',path,rpath:null,hpath:null,hospNid:null,pp:0,eid,ex:em.x,ey:em.y,sx,sy,wd,ws:0});
 
   if(em.needs.every(n=>em.disp.filter(d=>d.type===n).length>=em.needs.filter(x=>x===n).length))
     em.fullyDisp=true;
@@ -977,21 +1202,21 @@ document.addEventListener('touchend',e=>{if(dragType){const t2=e.changedTouches[
 */
 const UPGS=[
   // ── TIER 1: Early — target wave 2-3 (~$700-900) ──
-  {id:'xp1', icon:'🚔',n:'2nd Police Car',    c:700,  d:'Add a 2nd patrol car to the fleet.',            type:'police',tier:1},
-  {id:'xf1', icon:'🚒',n:'2nd Fire Truck',    c:750,  d:'Add a 2nd fire truck to the fleet.',            type:'fire',  tier:1},
-  {id:'xa1', icon:'🚑',n:'2nd Ambulance',     c:700,  d:'Add a 2nd ambulance to the fleet.',             type:'amb',   tier:1},
+  {id:'xp1', icon:'🚔',n:'2nd Police Car',    c:1400, d:'Add a 2nd patrol car to the fleet.',            type:'police',tier:1},
+  {id:'xf1', icon:'🚒',n:'2nd Fire Truck',    c:1500, d:'Add a 2nd fire truck to the fleet.',            type:'fire',  tier:1},
+  {id:'xa1', icon:'🚑',n:'2nd Ambulance',     c:1400, d:'Add a 2nd ambulance to the fleet.',             type:'amb',   tier:1},
   {id:'eff1',icon:'⚡',n:'Pro Training',      c:900,  d:'Crews resolve incidents 25% faster.',           eff:1.25,     tier:1},
   // ── TIER 2: Mid — target wave 4-5 (~$1400-1800) ──
-  {id:'xh1', icon:'🚁',n:'2nd Helicopter',    c:1500, d:'Add a 2nd helicopter to the heliport.',         type:'heli',  tier:2},
-  {id:'xp2', icon:'🚔',n:'3rd Police Car',    c:1400, d:'Add a 3rd patrol car to the fleet.',            type:'police',tier:2},
-  {id:'xf2', icon:'🚒',n:'3rd Fire Truck',    c:1500, d:'Add a 3rd fire truck to the fleet.',            type:'fire',  tier:2},
-  {id:'xa2', icon:'🚑',n:'3rd Ambulance',     c:1400, d:'Add a 3rd ambulance to the fleet.',             type:'amb',   tier:2},
+  {id:'xh1', icon:'🚁',n:'2nd Helicopter',    c:3000, d:'Add a 2nd helicopter to the heliport.',         type:'heli',  tier:2},
+  {id:'xp2', icon:'🚔',n:'3rd Police Car',    c:2800, d:'Add a 3rd patrol car to the fleet.',            type:'police',tier:2},
+  {id:'xf2', icon:'🚒',n:'3rd Fire Truck',    c:3000, d:'Add a 3rd fire truck to the fleet.',            type:'fire',  tier:2},
+  {id:'xa2', icon:'🚑',n:'3rd Ambulance',     c:2800, d:'Add a 3rd ambulance to the fleet.',             type:'amb',   tier:2},
   {id:'eff2',icon:'⚡',n:'Elite Response',    c:1800, d:'Crews resolve 50% faster (stacks with Training).', eff:1.5, tier:2},
   // ── TIER 3: Late — target wave 7+ (~$2600-3500) ──
-  {id:'xp3', icon:'🚔',n:'4th Police Car',    c:2600, d:'Add a 4th patrol car.',                         type:'police',tier:3},
-  {id:'xf3', icon:'🚒',n:'4th Fire Truck',    c:2800, d:'Add a 4th fire truck.',                         type:'fire',  tier:3},
-  {id:'xa3', icon:'🚑',n:'4th Ambulance',     c:2600, d:'Add a 4th ambulance.',                          type:'amb',   tier:3},
-  {id:'xh2', icon:'🚁',n:'3rd Helicopter',    c:3200, d:'Add a 3rd helicopter.',                         type:'heli',  tier:3},
+  {id:'xp3', icon:'🚔',n:'4th Police Car',    c:5200, d:'Add a 4th patrol car.',                         type:'police',tier:3},
+  {id:'xf3', icon:'🚒',n:'4th Fire Truck',    c:5600, d:'Add a 4th fire truck.',                         type:'fire',  tier:3},
+  {id:'xa3', icon:'🚑',n:'4th Ambulance',     c:5200, d:'Add a 4th ambulance.',                          type:'amb',   tier:3},
+  {id:'xh2', icon:'🚁',n:'3rd Helicopter',    c:6400, d:'Add a 3rd helicopter.',                         type:'heli',  tier:3},
   {id:'eff3',icon:'⚡',n:'Tactical Command',  c:3500, d:'30% faster crews + 2 extra incident slots.',    eff:1.3,bonus:'cap',tier:3},
 ];
 
@@ -1044,6 +1269,36 @@ function showUpgrades(){
   });
   document.getElementById('um').classList.add('on');
 }
+
+
+/* ── GAME OVER ── */
+function triggerGameOver(){
+  G.gameOver=true;
+  document.getElementById('go-score').textContent=G.score.toLocaleString();
+  document.getElementById('go-res').textContent=G.resolved;
+  document.getElementById('go-wave').textContent=G.wave;
+  document.getElementById('go-screen').classList.add('on');
+  sfxTimeout();sfxTimeout();
+}
+
+document.getElementById('go-btn').addEventListener('click',()=>{
+  // Reset all state
+  Object.assign(G,{
+    money:0,score:0,resolved:0,rating:5,wave:1,capBonus:0,
+    ems:[],vehs:[],nextId:1,spawnT:12000,waveT:0,lastT:0,
+    veh:{police:{total:1,busy:0},fire:{total:1,busy:0},amb:{total:1,busy:0},heli:{total:1,busy:0}},
+    efficiency:1.0,upgrades:new Set(),gameOver:false,
+  });
+  lastSpawnCl=null;spawnsSinceHeli=0;selEm=null;
+  clearStatus();updateCards();updateUI();
+  document.getElementById('go-screen').classList.remove('on');
+  mapCanvas=null;
+  requestAnimationFrame(t=>{
+    G.lastT=t;
+    buildMapCanvas();spawnEm();
+    requestAnimationFrame(loop);
+  });
+});
 
 /* ─── TITLE GRID LINES ─── */
 const tbg=document.getElementById('title-bg');
